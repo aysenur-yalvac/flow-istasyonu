@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akış İstasyonu | Odaklanma Aracı</title>
+
+    <!-- 
+      Google Fonts üzerinden 2 farklı yazı tipi çekiyoruz:
+      1) "Space Grotesk": Başlıklar ve sayaç rakamları için (karakterli, teknik bir his veriyor)
+      2) "Inter": Genel arayüz metinleri için (okunaklı, nötr, modern)
+      Bu bir kütüphane/framework değil, sadece bir font dosyası olduğu için 
+      "Vanilla" kuralımızı bozmuyor.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS dosyamızı buraya bağlıyoruz -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 
+      .app-container: Tüm uygulamayı saran ana kutu.
+      Neden bir "ana kutu" ile sarmalıyoruz? Çünkü sayfayı dikey ve yatayda 
+      ortalamak, maksimum genişlik (max-width) sınırı koymak gibi genel 
+      düzen kurallarını tek bir yerden yönetmek istiyoruz.
+    -->
+    <div class="app-container">
+
+        <!-- ===================== ÜST BAŞLIK (HEADER) ===================== -->
+        <header class="app-header">
+            <h1 class="app-title">Akış İstasyonu</h1>
+            <p class="app-subtitle">Odaklan. Miksle. Devam et.</p>
+        </header>
+
+        <!-- 
+          .app-main: Sayfanın asıl içeriğini tutan alan.
+          İçinde 2 ana bölüm (section) var: Sayaç Paneli ve Mikser Paneli.
+          Bunları CSS tarafında "grid" ile yan yana dizeceğiz.
+        -->
+        <main class="app-main">
+
+            <!-- ===================== SAYAÇ PANELİ (POMODORO) ===================== -->
+            <section class="panel timer-panel" aria-label="Odaklanma Sayacı">
+
+                <!-- 
+                  Mod seçici: "Odaklanma" ve "Mola" arasında geçiş yapılacak yer.
+                  Şimdilik sadece görsel; JS eklendiğinde birine "active" sınıfı 
+                  verilerek hangi modda olduğumuz gösterilecek.
+                -->
+                <div class="mode-switcher">
+                    <button class="mode-btn is-active" type="button">Odaklanma</button>
+                    <button class="mode-btn" type="button">Mola</button>
+                </div>
+
+                <!-- 
+                  Sayacın kendisi. Dakika ve saniyeyi AYRI <span> etiketlerine 
+                  koyuyoruz. Neden? Çünkü ileride JavaScript ile sadece saniye 
+                  kısmını güncellemek istediğimizde, tüm metni değil, sadece 
+                  ilgili <span>'in içeriğini (textContent) değiştirmemiz yeterli 
+                  olacak. Bu, kodu hem daha temiz hem de performanslı yapar.
+                -->
+                <div class="timer-display">
+                    <span id="timer-minutes">25</span>
+                    <span class="timer-colon">:</span>
+                    <span id="timer-seconds">00</span>
+                </div>
+
+                <!-- 
+                  İlerleme çubuğu: Sayaç azaldıkça dolacak (veya boşalacak) 
+                  bir görsel gösterge. Şimdilik statik bir yüzde ile duruyor.
+                -->
+                <div class="progress-track" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill"></div>
+                </div>
+
+                <!-- Kontrol butonları: Başlat / Duraklat / Sıfırla -->
+                <div class="timer-controls">
+                    <button id="btn-reset" class="control-btn control-btn--ghost" type="button" title="Sıfırla">
+                        Sıfırla
+                    </button>
+                    <button id="btn-start-pause" class="control-btn control-btn--primary" type="button" title="Başlat">
+                        Başlat
+                    </button>
+                    <button class="control-btn control-btn--ghost" type="button" title="Ayarlar">
+                        Süre
+                    </button>
+                </div>
+            </section>
+
+            <!-- ===================== SES MİKSER PANELİ ===================== -->
+            <section class="panel mixer-panel" aria-label="Ortam Sesi Mikseri">
+
+                <h2 class="panel-heading">Ortam Sesleri</h2>
+
+                <!-- 
+                  Her bir ses satırı (.sound-row) bağımsız bir bileşen gibi düşünülmeli.
+                  İleride JavaScript yazarken, her satırdaki <input type="range"> 
+                  elemanının "data-sound" attribute'u sayesinde hangi ses dosyasına 
+                  karşılık geldiğini kolayca bulacağız (örn: data-sound="rain").
+                -->
+
+                <!-- Ses Satırı 1: Yağmur -->
+                <div class="sound-row" data-sound="rain">
+                    <div class="sound-icon" aria-hidden="true">🌧️</div>
+                    <div class="sound-info">
+                        <label class="sound-label" for="slider-rain">Yağmur</label>
+                        <!-- 
+                          type="range": Tarayıcının kendi kaydırıcı elemanı.
+                          min/max/value: Ses seviyesini 0-100 arası bir yüzde olarak 
+                          modelliyoruz; bu, ileride "volume = value / 100" şeklinde 
+                          doğrudan Web Audio API'ye aktarılabilecek temiz bir aralık.
+                        -->
+                        <input
+                            type="range"
+                            id="slider-rain"
+                            class="sound-slider"
+                            min="0"
+                            max="100"
+                            value="0"
+                        >
+                    </div>
+                    <!-- Yüzde değerini kullanıcıya sayısal olarak da gösteriyoruz -->
+                    <span class="sound-value">0%</span>
+                </div>
+
+                <!-- Ses Satırı 2: Kafe Ortamı -->
+                <div class="sound-row" data-sound="cafe">
+                    <div class="sound-icon" aria-hidden="true">☕</div>
+                    <div class="sound-info">
+                        <label class="sound-label" for="slider-cafe">Kafe Ortamı</label>
+                        <input
+                            type="range"
+                            id="slider-cafe"
+                            class="sound-slider"
+                            min="0"
+                            max="100"
+                            value="0"
+                        >
+                    </div>
+                    <span class="sound-value">0%</span>
+                </div>
+
+                <!-- Ses Satırı 3: Şömine -->
+                <div class="sound-row" data-sound="fireplace">
+                    <div class="sound-icon" aria-hidden="true">🔥</div>
+                    <div class="sound-info">
+                        <label class="sound-label" for="slider-fireplace">Şömine</label>
+                        <input
+                            type="range"
+                            id="slider-fireplace"
+                            class="sound-slider"
+                            min="0"
+                            max="100"
+                            value="0"
+                        >
+                    </div>
+                    <span class="sound-value">0%</span>
+                </div>
+
+            </section>
+
+        </main>
+
+        <footer class="app-footer">
+            <p>Vanilla HTML · CSS · JavaScript ile inşa edildi.</p>
+        </footer>
+
+    </div>
+
+    <!-- 
+      app.js'i neden en sonda, </body>'den hemen önce ekliyoruz?
+      Çünkü tarayıcı HTML'i yukarıdan aşağı okur. Script dosyası <head> 
+      içinde olsaydı, tarayıcı henüz butonları ve span'ları OLUŞTURMADAN 
+      JS çalışmaya başlardı; document.querySelector() o elemanları 
+      bulamaz ve "null" döndürürdü. Script'i en sona koyarak, JS 
+      çalıştığında tüm HTML elemanlarının DOM'da hazır olmasını garanti 
+      ediyoruz.
+    -->
+    <script src="app.js"></script>
+</body>
+</html>
