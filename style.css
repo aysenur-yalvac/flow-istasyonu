@@ -413,6 +413,52 @@ body {
     border-radius: 999px;
 }
 
+/* --------------------------------------------------------------------
+   Ses Kontrol Butonu (Play/Pause)
+   --------------------------------------------------------------------
+   Her ses satırına, slider'dan BAĞIMSIZ olarak sesi anında açıp 
+   kapatabilecek küçük, yuvarlak bir buton ekliyoruz. Neden slider 
+   YETMEZ de ayrı bir butona ihtiyacımız var? Çünkü kullanıcı sesi 
+   "%30'da bırakıp geçici olarak durdurmak" isteyebilir; slider'ı 
+   sıfıra çekmek o kayıtlı seviyeyi kaybettirir. Play/Pause butonu ise 
+   seviyeyi HİÇ bozmadan sadece çalma durumunu değiştirecek 
+   (bunu JavaScript adımında bağlayacağız).
+------------------------------------------------------------------------- */
+.sound-toggle-btn {
+    /* Aynı .sound-icon kutusuyla aynı boyutta olsun ki satır hizası bozulmasın */
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.sound-toggle-btn:hover {
+    border-color: var(--color-accent-dim);
+    color: var(--color-text-primary);
+}
+
+/* 
+  .is-playing: JS ileride bir ses gerçekten çalmaya başladığında bu 
+  sınıfı butona ekleyecek. Böylece buton, "şu an bu ses AKTİF" bilgisini 
+  vurgu rengiyle gösterecek — kullanıcı hangi seslerin açık olduğunu 
+  slider'lara tek tek bakmadan, bu renkli noktalardan anlayabilecek.
+*/
+.sound-toggle-btn.is-playing {
+    background-color: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
 /* ==========================================================================
    7) ALT BİLGİ (FOOTER)
    ==========================================================================
@@ -435,4 +481,153 @@ body {
 :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+}
+
+/* ==========================================================================
+   9) AYAR KARTI (MODAL) — Özel Süre Ayarı
+   ==========================================================================
+   Bir modal, teknik olarak 2 iç içe katmandan oluşur:
+   1) .modal-overlay: Tüm ekranı kaplayan, arkayı karartan yarı saydam kat.
+   2) .modal-card: Bu katın TAM ORTASINDA duran, gerçek içerik kartı.
+
+   .modal-overlay İÇİN position: fixed KULLANIMI:
+   "fixed" konumlandırma, elemanı sayfanın normal akışından tamamen 
+   çıkarır ve onu TARAYICI PENCERESİNE göre konumlandırır — sayfa 
+   aşağı kaydırılsa bile overlay hep ekranda aynı yerde kalır. 
+   "inset: 0" ise "top: 0; right: 0; bottom: 0; left: 0;" için bir 
+   kısayoldur; yani bu katı ekranın dört bir yanına da yapıştırıp tüm 
+   pencereyi kaplamasını sağlar.
+
+   ORTALAMA MANTIĞI:
+   .modal-overlay'i display: flex + align-items: center + 
+   justify-content: center yapıyoruz. Bu sayede içindeki TEK çocuk 
+   eleman olan .modal-card, hem dikeyde hem yatayda otomatik olarak 
+   ekranın tam ortasına oturuyor — sabit piksel hesabıyla 
+   "margin-left: -180px" gibi kırılgan (ekran boyutuna göre bozulan) 
+   yöntemlere hiç gerek kalmıyor.
+
+   display: none <-> flex GEÇİŞİ (GÖRÜNÜRLÜK MANTIĞI):
+   Modalın varsayılan hali "display: none" — yani modal DOM'da var 
+   ama hiç render edilmiyor, hiç yer kaplamıyor, ekran okuyucular 
+   tarafından da görülmüyor. JavaScript adımına geçtiğimizde, 
+   settingsBtn'e tıklanınca bu elemana ".is-open" class'ını ekleyeceğiz; 
+   bu class display'i "flex" yapıp modalı hem görünür kılacak hem de 
+   içindeki ortalama düzenini devreye sokacak. 
+   Neden "opacity: 0" yerine "display: none" tercih ediyoruz? Çünkü 
+   opacity sadece görsel olarak gizler; eleman hâlâ DOM'da yer kaplar 
+   ve klavye ile Tab tuşuna basan bir kullanıcı, GÖRÜNMEYEN modal 
+   içindeki input'a yanlışlıkla odaklanabilir. display: none ise 
+   elemanı hem görsel olarak hem de etkileşim/erişilebilirlik 
+   katmanından tamamen kaldırır — modal kapalıyken "hiç yokmuş gibi" 
+   davranması tam olarak istediğimiz şey.
+------------------------------------------------------------------------- */
+.modal-overlay {
+    /* Varsayılan durum: modal tamamen gizli ve etkileşimsiz */
+    display: none;
+
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+
+    /* Arkayı karartan yarı saydam siyah kat. rgba'nın 4. değeri (alpha) 
+       0 (tamamen saydam) ile 1 (tamamen opak) arasında bir saydamlık 
+       oranıdır; 0.65 ile arkadaki arayüzün hafifçe seçilmesini ama 
+       dikkatin modal karta yönelmesini istiyoruz. */
+    background-color: rgba(10, 8, 6, 0.65);
+
+    /* İçerideki tek çocuğu (.modal-card) hem yatay hem dikeyde ortalıyoruz */
+    align-items: center;
+    justify-content: center;
+
+    /* Modal küçük ekranlarda kenarlara yapışmasın diye biraz boşluk payı */
+    padding: var(--space-md);
+}
+
+/* 
+  .is-open: JavaScript bu class'ı .modal-overlay'e eklediğinde, 
+  display: none kuralının ÜZERİNE yazarak (aynı özellik, sonradan 
+  tanımlandığı ve aynı özgüllükte olduğu için CSS'te SONRAKİ kural 
+  kazanır) modalı flex'e çevirip görünür ve ortalanmış hale getiriyor.
+*/
+.modal-overlay.is-open {
+    display: flex;
+}
+
+.modal-card {
+    width: min(360px, 100%);
+    background-color: var(--color-panel-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+
+    /* Karta hafif bir gölge veriyoruz ki arkadaki karartılmış katmandan 
+       görsel olarak "yükseliyormuş" gibi ayrışsın. */
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.modal-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.modal-description {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    margin-top: calc(-1 * var(--space-sm));
+}
+
+/* 
+  Sayı giriş kutusu: Genel .control-btn ailesinden ayrı, kendi başına 
+  bir input stili. Tarayıcının varsayılan <input> görünümü de tıpkı 
+  range slider gibi temaya uymuyor; burada border/background'u kendi 
+  tasarım tokenlarımızla eziyoruz.
+*/
+.modal-input {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    text-align: center;
+    width: 100%;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* 
+  Tarayıcıların <input type="number"> için varsayılan olarak eklediği 
+  yukarı/aşağı ok ikonlarını (spinner) kaldırıyoruz; bunlar temamızla 
+  uyumsuz, varsayılan tarayıcı stiliyle geliyor ve görsel bütünlüğü 
+  bozuyor. Chrome/Safari ve Firefox bu ikonu farklı yollarla kontrol 
+  ettiği için, tıpkı range slider'da olduğu gibi, ikisini de ayrı ayrı 
+  hedefliyoruz.
+*/
+.modal-input::-webkit-outer-spin-button,
+.modal-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.modal-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.modal-actions .control-btn {
+    flex: 1;
 }

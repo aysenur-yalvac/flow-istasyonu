@@ -103,7 +103,16 @@
                 -->
 
                 <!-- Ses Satırı 1: Yağmur -->
-                <div class="sound-row" data-sound="rain">
+                <!-- 
+                  data-default-volume="30": Kullanıcı slider'a hiç dokunmadan 
+                  sadece Play butonuna basarsa, JS adımında bu satırdaki sesi 
+                  kulağı rahatsız etmeyecek, güvenli bir varsayılan seviyeyle 
+                  (%30) başlatabilmemiz için buraya not düşüyoruz. Slider'ın 
+                  kendi value'sunu bilerek 0'da bırakıyoruz — sesler 
+                  VARSAYILAN OLARAK KAPALI gelsin istiyoruz; %30 sadece 
+                  "Play'e basılırsa hangi seviyeden başlasın" sorusunun cevabı.
+                -->
+                <div class="sound-row" data-sound="rain" data-default-volume="30">
                     <div class="sound-icon" aria-hidden="true">🌧️</div>
                     <div class="sound-info">
                         <label class="sound-label" for="slider-rain">Yağmur</label>
@@ -124,10 +133,19 @@
                     </div>
                     <!-- Yüzde değerini kullanıcıya sayısal olarak da gösteriyoruz -->
                     <span class="sound-value">0%</span>
+
+                    <!-- 
+                      Play/Pause butonu: Slider'dan BAĞIMSIZ olarak sesi 
+                      anında başlatıp durdurmayı sağlayacak. Şu an sadece 
+                      görsel bir "▶" (play) simgesiyle duruyor; JS adımında 
+                      tıklanınca "⏸" (pause) ile "▶" arasında değişecek ve 
+                      .is-playing class'ı eklenip çıkarılacak.
+                    -->
+                    <button class="sound-toggle-btn" type="button" aria-label="Yağmur sesini oynat">▶</button>
                 </div>
 
                 <!-- Ses Satırı 2: Kafe Ortamı -->
-                <div class="sound-row" data-sound="cafe">
+                <div class="sound-row" data-sound="cafe" data-default-volume="30">
                     <div class="sound-icon" aria-hidden="true">☕</div>
                     <div class="sound-info">
                         <label class="sound-label" for="slider-cafe">Kafe Ortamı</label>
@@ -141,10 +159,11 @@
                         >
                     </div>
                     <span class="sound-value">0%</span>
+                    <button class="sound-toggle-btn" type="button" aria-label="Kafe ortamı sesini oynat">▶</button>
                 </div>
 
                 <!-- Ses Satırı 3: Şömine -->
-                <div class="sound-row" data-sound="fireplace">
+                <div class="sound-row" data-sound="fireplace" data-default-volume="30">
                     <div class="sound-icon" aria-hidden="true">🔥</div>
                     <div class="sound-info">
                         <label class="sound-label" for="slider-fireplace">Şömine</label>
@@ -158,6 +177,7 @@
                         >
                     </div>
                     <span class="sound-value">0%</span>
+                    <button class="sound-toggle-btn" type="button" aria-label="Şömine sesini oynat">▶</button>
                 </div>
 
             </section>
@@ -168,6 +188,48 @@
             <p>Vanilla HTML · CSS · JavaScript ile inşa edildi.</p>
         </footer>
 
+    </div>
+
+    <!-- 
+      ===================== AYAR KARTI (MODAL) =====================
+      Bu modalı BİLEREK .app-container'ın DIŞINA, body'nin doğrudan 
+      çocuğu olarak koyuyoruz. Neden? Çünkü .app-container gibi bir 
+      ebeveynin İÇİNE gömülü bir "position: fixed" eleman, ebeveynde 
+      "transform" gibi bazı CSS özellikleri varsa beklenmedik şekilde 
+      YANLIŞ konumlanabilir (fixed'in referans noktası değişebilir). 
+      Modal'ı body'nin doğrudan altına koyarak bu riski baştan 
+      ortadan kaldırıyoruz; modal her zaman TÜM ekrana göre konumlanır.
+
+      "is-open" class'ı henüz YOK — yani modal şu an CSS'teki varsayılan 
+      "display: none" kuralı sayesinde tamamen gizli. JS adımında 
+      settingsBtn'e tıklanınca bu class eklenecek.
+    -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-card">
+            <h2 class="modal-title">Özel Süre Ayarı</h2>
+            <p class="modal-description">Yeni odaklanma süresini dakika cinsinden girin.</p>
+
+            <!-- 
+              type="number": Tarayıcı bu input için mobilde otomatik olarak 
+              sayısal bir klavye açar ve masaüstünde yukarı/aşağı ok 
+              tuşlarıyla artırıp azaltmayı destekler. min="1" ile 0 veya 
+              negatif bir değer girilmesini tarayıcı seviyesinde caydırıyoruz 
+              (yine de JS tarafında AYRICA doğrulama yapacağız, çünkü HTML 
+              validasyonu tek başına yeterli/güvenilir değildir).
+            -->
+            <input
+                type="number"
+                id="modal-minutes-input"
+                class="modal-input"
+                min="1"
+                placeholder="25"
+            >
+
+            <div class="modal-actions">
+                <button id="modal-cancel-btn" class="control-btn control-btn--ghost" type="button">Vazgeç</button>
+                <button id="modal-save-btn" class="control-btn control-btn--primary" type="button">Kaydet</button>
+            </div>
+        </div>
     </div>
 
     <!-- 
