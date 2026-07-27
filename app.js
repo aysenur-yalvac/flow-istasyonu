@@ -30,6 +30,13 @@ const progressFill = document.querySelector('.progress-fill');
 // ileride bunların üzerinde forEach ile tek tek dolaşacağız.
 const soundRows = document.querySelectorAll('.sound-row');
 
+// Üstteki "Odaklanma" / "Mola" butonlarının İKİSİNİ de tek seferde 
+// yakalıyoruz. querySelectorAll kullanmamızın sebebi tıpkı soundRows'ta 
+// olduğu gibi: ikisi de aynı ".mode-btn" class'ını taşıyor, hangisine 
+// tıklandığını her butonun kendi "data-mode" attribute'undan anlayacağız.
+const modeButtons = document.querySelectorAll('.mode-btn');
+const settingsBtn = document.querySelector('#btn-settings');
+
 
 // -----------------------------------------------------------------------
 // 2) UYGULAMA DURUMU (STATE)
@@ -53,11 +60,31 @@ const soundRows = document.querySelectorAll('.sound-row');
 // Süreyi doğrudan saniye olarak tutmak, geri sayarken "her saniye 1 azalt" 
 // gibi çok basit bir işlem yapmamızı sağlıyor; dakika/saniyeyi ekranda 
 // göstermeden hemen önce, sadece updateDisplay() içinde hesaplıyoruz.
-const FOCUS_DURATION_IN_SECONDS = 25 * 60; // 1500 saniye
+// DİKKAT: Bu değişken artık "const" DEĞİL, "let" ile tanımlı.
+// const, bir değişkene SADECE BİR KEZ değer atamana izin verir; sonradan 
+// "FOCUS_DURATION_IN_SECONDS = 30 * 60" gibi yeniden atama yapmaya 
+// kalkarsan tarayıcı hata fırlatır. Özel Süre Ayarı özelliğiyle birlikte 
+// artık kullanıcı bu süreyi ÇALIŞMA SIRASINDA değiştirebilecek; yani bu 
+// değer artık "sabit" değil, zamanla değişebilen bir durum (state). Bu 
+// yüzden let'e çeviriyoruz — const, sadece gerçekten hiç değişmeyecek 
+// değerler için doğru tercihtir.
+let FOCUS_DURATION_IN_SECONDS = 25 * 60; // 1500 saniye
+
+// Kısa mola süresi de aynı mantıkla, 5 dakikayı saniyeye çeviriyoruz.
+const BREAK_DURATION_IN_SECONDS = 5 * 60; // 300 saniye
 
 let remainingSeconds = FOCUS_DURATION_IN_SECONDS; // Şu an kalan süre
 let isRunning = false;                            // Sayaç şu an çalışıyor mu?
 let intervalId = null;                             // setInterval'in kimlik numarası
+
+// currentMode: Şu an "focus" (odaklanma) mu yoksa "break" (mola) modunda 
+// mı olduğumuzu tutan bir metin (string) state'i. Bunu neden ayrı bir 
+// değişken olarak tutuyoruz, remainingSeconds'tan mı anlaşılmaz mı? 
+// Çünkü remainingSeconds sadece "kaç saniye kaldığını" bilir, "hangi 
+// SÜRENİN üzerinden sayıldığını" bilmez. Örneğin süre sıfırlandığında 
+// "25 dakikaya mı, 5 dakikaya mı dönmeliyim?" sorusunun cevabı ancak 
+// currentMode'a bakarak bulunabilir.
+let currentMode = 'focus';
 
 
 // -----------------------------------------------------------------------
@@ -145,8 +172,22 @@ function tick() {
         stopTimer();
         remainingSeconds = 0;
         updateDisplay();
-        // İleride buraya "bildirim sesi çal" veya "Mola moduna otomatik geç" 
-        // gibi bir mantık ekleyebiliriz; bu adım için henüz o kısma dokunmuyoruz.
+
+        // OTOMATİK MOD GEÇİŞİ:
+        // "Odaklanma" süresi bittiyse kullanıcıyı otomatik olarak "Mola" 
+        // moduna geçiriyoruz; zaten moladaysak (mola bittiyse) tekrar 
+        // "Odaklanma"ya döndürüyoruz. Bu basit iki-durumlu (ternary) 
+        // mantık, bir Pomodoro döngüsünün doğal akışını (çalış -> 
+        // dinlen -> çalış...) tek satırda kuruyor.
+        //
+        // switchMode() içinde zaten remainingSeconds'ı yeni modun 
+        // süresine sıfırlayan, ekranı güncelleyen ve .is-active 
+        // sınıfını doğru butona taşıyan tüm mantık var — bu yüzden 
+        // burada tekrar aynı işleri elle yazmak yerine, sadece 
+        // switchMode()'u çağırmak yeterli. Bu, "DRY" prensibinin 
+        // (aynı kodu tekrar etme) tam olarak işe yaradığı bir örnek.
+        const nextMode = currentMode === 'focus' ? 'break' : 'focus';
+        switchMode(nextMode);
     }
 }
 
@@ -227,8 +268,14 @@ function resetTimer() {
     // gözle görülür bir hataya (bug) yol açar.
     stopTimer();
 
-    // Süreyi başa, 25 dakikaya döndürüyoruz.
-    remainingSeconds = FOCUS_DURATION_IN_SECONDS;
+    // Süreyi başa döndürüyoruz. DİKKAT: Artık sabit olarak 
+    // FOCUS_DURATION_IN_SECONDS yazmıyoruz; çünkü kullanıcı "Mola" 
+    // modundayken Sıfırla'ya basarsa, onu yanlışlıkla 25 dakikaya değil, 
+    // KENDİ modunun süresine (5 dakika) döndürmemiz gerekir. Bu yüzden 
+    // hangi süreye döneceğimize currentMode'a bakarak karar veriyoruz.
+    remainingSeconds = currentMode === 'focus'
+        ? FOCUS_DURATION_IN_SECONDS
+        : BREAK_DURATION_IN_SECONDS;
     updateDisplay();
 
     // remainingSeconds artık FOCUS_DURATION_IN_SECONDS'a EŞİT olduğu için 
@@ -243,6 +290,131 @@ function resetTimer() {
 }
 
 resetBtn.addEventListener('click', resetTimer);
+
+
+// -----------------------------------------------------------------------
+// 8.1) MOD DEĞİŞTİRME: switchMode()
+// -----------------------------------------------------------------------
+// newMode parametresi olarak 'focus' ya da 'break' metnini alacak.
+function switchMode(newMode) {
+    // 1) Global state'i güncelle: artık hangi modda olduğumuzu 
+    // currentMode değişkeni üzerinden HERKESE (diğer fonksiyonlara, 
+    // tick()'e) duyurmuş oluyoruz.
+    currentMode = newMode;
+
+    // 2) Süreyi ilgili moda göre sıfırla. Ternary (üçlü) operatör, 
+    // "koşul ? doğruysaBu : yanlışsaBu" şeklinde çalışan, kısa bir 
+    // if/else'dir: newMode 'focus' ise FOCUS_DURATION_IN_SECONDS, 
+    // değilse (yani 'break' ise) BREAK_DURATION_IN_SECONDS ata.
+    remainingSeconds = newMode === 'focus'
+        ? FOCUS_DURATION_IN_SECONDS
+        : BREAK_DURATION_IN_SECONDS;
+
+    // 3) Sayaç o an çalışıyor olabilir (kullanıcı odaklanırken modu 
+    // değiştirebilir); mod değişince eski zamanlayıcıyı durdurmazsak, 
+    // yeni süre üzerine eski setInterval "sızıntı" yapmaya devam eder.
+    stopTimer();
+
+    // 4) Ekranı ve ilerleme çubuğunu, yeni remainingSeconds değerine 
+    // göre yeniden çiziyoruz.
+    updateDisplay();
+    updateProgressBar();
+
+    // stopTimer() butonu 'Devam Et' yapmıştı; ama mod değişince aslında 
+    // hiç başlamamış yeni bir sayaçtayız, metni 'Başlat'a döndürüyoruz.
+    startPauseBtn.textContent = 'Başlat';
+
+    // 5) Aktif buton sınıfını (.is-active) güncelleme.
+    // modeButtons üzerinde dolaşıp HER birine bakıyoruz: eğer o butonun 
+    // data-mode değeri, yeni seçilen moda EŞİTSE .is-active ekle, 
+    // değilse çıkar. classList.toggle(sınıf, koşul) tam olarak bunu 
+    // yapan kısayoldur: ikinci parametre (koşul) true ise sınıfı EKLER, 
+    // false ise SİLER — ayrı ayrı add()/remove() yazmaktan kurtarır.
+    modeButtons.forEach((button) => {
+        const isTargetButton = button.dataset.mode === newMode;
+        button.classList.toggle('is-active', isTargetButton);
+    });
+}
+
+// modeButtons NodeList'inin her birine, tıklandığında switchMode()'u 
+// KENDİ data-mode değeriyle çağıracak bir dinleyici ekliyoruz.
+// "() => switchMode(button.dataset.mode)" yazmamızın sebebi: 
+// switchMode fonksiyonunun bir PARAMETREYE ihtiyacı var, ama 
+// addEventListener'a doğrudan "switchMode" yazsaydık, tarayıcı onu 
+// hiç parametre vermeden (yani newMode = undefined ile) çağırırdı. 
+// Ok fonksiyonuyla sarmalayarak, tıklama anında hangi butona 
+// tıklandığını okuyup DOĞRU parametreyle çağırmasını sağlıyoruz.
+modeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        switchMode(button.dataset.mode);
+    });
+});
+
+
+// -----------------------------------------------------------------------
+// 8.2) ÖZEL SÜRE AYARI: "Süre" butonu
+// -----------------------------------------------------------------------
+settingsBtn.addEventListener('click', () => {
+    // prompt(mesaj): Tarayıcının yerleşik, basit bir metin giriş kutusu 
+    // açan fonksiyonu. ÇOK ÖNEMLİ bir kural: prompt() kullanıcı ne 
+    // yazarsa yazsın (rakam da girse), SONUCU HER ZAMAN bir METİN 
+    // (string) olarak döndürür. Yani kullanıcı "30" yazsa bile bize 
+    // gelen değer sayısal 30 değil, "30" metnidir. Kullanıcı pencereyi 
+    // "İptal" ile kapatırsa da prompt() bize `null` döndürür.
+    const userInput = prompt('Yeni odaklanma süresini dakika cinsinden girin:');
+
+    // Kullanıcı "İptal"e bastıysa userInput null olur; bu durumda hiçbir 
+    // şey yapmadan fonksiyondan çıkıyoruz (early return). Bu kontrolü 
+    // yapmazsak, birazdan Number(null) gibi anlamsız bir işlemle 
+    // uğraşmak zorunda kalırdık.
+    if (userInput === null) {
+        return;
+    }
+
+    // Number(userInput): Metni GERÇEK bir sayıya çeviriyoruz. Bunu 
+    // NEDEN yapmak ZORUNDAYIZ? Çünkü JavaScript'te + işareti metinleri 
+    // BİRLEŞTİRİR (concatenation), sayıları TOPLAMAZ. Örneğin 
+    // "30" + "60" bize matematiksel 90 değil, "3060" metnini verir. 
+    // Bizim ihtiyacımız olan ise gerçek bir çarpma işlemi (dakika * 60); 
+    // bu yüzden matematiğe girmeden ÖNCE mutlaka Number() ile 
+    // dönüştürmemiz gerekiyor. Kullanıcı "abc" gibi sayı OLMAYAN bir 
+    // şey yazarsa, Number() bize NaN ("Not a Number" — sayı değil) 
+    // değerini döndürür; bunu birazdan kontrol edeceğiz.
+    const newFocusMinutes = Number(userInput);
+
+    // Geçerlilik kontrolü — İKİ şeyi aynı anda doğruluyoruz:
+    // 1) Number.isNaN(newFocusMinutes): Girilen şey sayıya hiç 
+    //    çevrilemediyse (örn. "abc" yazıldıysa) bu true döner; 
+    //    "!Number.isNaN(...)" ile "NaN DEĞİLSE" diyoruz.
+    // 2) newFocusMinutes > 0: Kullanıcı "0" ya da "-5" gibi anlamsız, 
+    //    negatif ya da sıfır bir süre girmiş olabilir; bunu da eziyoruz.
+    // İkisi de sağlanmıyorsa kullanıcıyı uyarıp fonksiyondan çıkıyoruz.
+    if (Number.isNaN(newFocusMinutes) || newFocusMinutes <= 0) {
+        alert('Lütfen geçerli, pozitif bir sayı girin.');
+        return;
+    }
+
+    // Dakikayı saniyeye çeviriyoruz ve global FOCUS_DURATION_IN_SECONDS 
+    // state'ini GÜNCELLİYORUZ. Bu satırın çalışabilmesi için yukarıda 
+    // bu değişkeni const'tan let'e çevirmiş olmamız ŞART; const olsaydı 
+    // bu satır "Assignment to constant variable" hatasıyla çökerdi.
+    FOCUS_DURATION_IN_SECONDS = newFocusMinutes * 60;
+
+    // Yeni süreyi HEMEN ekrana yansıtmak, sadece kullanıcı şu an 
+    // "focus" modundaysa VE sayaç aktif olarak ÇALIŞMIYORSA mantıklı. 
+    // Neden bu ikinci koşulu (isRunning olmaması) ekliyoruz? Çünkü 
+    // sayaç saymaya devam ederken kullanıcı süreyi değiştirirse, 
+    // remainingSeconds'ı aniden değiştirmek kafa karıştırıcı bir 
+    // deneyim yaratır (örn. 12:34'te iken aniden 30:00'a atlamak gibi). 
+    // Bu yüzden değişikliği ancak sayaç DURMUŞKEN anında uyguluyoruz; 
+    // sayaç çalışırken girilen yeni süre, bir SONRAKİ sıfırlamada 
+    // veya mod geçişinde devreye girecek.
+    if (currentMode === 'focus' && !isRunning) {
+        remainingSeconds = FOCUS_DURATION_IN_SECONDS;
+        updateDisplay();
+        updateProgressBar();
+    }
+});
 
 
 // -----------------------------------------------------------------------
