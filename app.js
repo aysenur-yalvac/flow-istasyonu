@@ -268,8 +268,6 @@ const cafeSound = new Audio('https://cdn.pixabay.com/download/audio/2022/05/16/a
 const fireplaceSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_c37d579ef6.mp3?filename=fireplace-106518.mp3'); 
 // Şömine: Çıtırdayan, kulak yormayan sıcak odun sesleri.
 
-const alarmSound = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_02379e56e4.mp3?filename=soft-bell-notification-1497.mp3'); 
-// Alarm: Kulak tırmalamayan, kısa, yumuşak ve nazik bir bitiş zili.
 rainSound.loop = true;
 cafeSound.loop = true;
 fireplaceSound.loop = true;
@@ -277,7 +275,7 @@ fireplaceSound.loop = true;
 
 // YENİ: Alarm sesi — kısa, tek seferlik bir bildirim sesi. Bu da bir 
 // YER TUTUCUDUR, gerçek bir alarm/zil sesi URL'siyle değiştirmen gerekir.
-const alarmSound = new Audio('ALARM_SESI_URL_BURAYA.mp3');
+const alarmSound = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_02379e56e4.mp3?filename=soft-bell-notification-1497.mp3');
 alarmSound.loop = false;
 
 const soundMap = {
