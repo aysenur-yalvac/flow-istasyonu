@@ -1,5 +1,6 @@
 // =============================================================================
-// AKIŞ İSTASYONU — app.js (GÜNCEL VE TAM SÜRÜM)
+// AKIŞ İSTASYONU — app.js
+// Sayaç mantığı + Mikser modülü (Modal, Play/Pause, Akıllı Alarm dahil)
 // =============================================================================
 
 
@@ -15,13 +16,12 @@ const soundRows = document.querySelectorAll('.sound-row');
 const modeButtons = document.querySelectorAll('.mode-btn');
 const settingsBtn = document.querySelector('#btn-settings');
 
-// ÖNEMLİ DÜZELTME: index.html'e baktığımda, ".modal-overlay" ve 
-// "#settings-modal" AYRI İKİ ELEMAN DEĞİL — aynı <div>'in hem class'ı 
-// hem id'si. Yani "settingsModal" değişkenimiz zaten overlay'in 
-// kendisi; ayrıca bir "modalOverlay" değişkenine gerek yok. Bunu 
-// bilerek tek değişkende topluyoruz.
+// YENİ: Modal (Ayar Kartı) elemanları.
+// DİKKAT: index.html'de modal, HEM overlay HEM de "kapsayıcı" görevini 
+// TEK bir elemanda birleştiriyor: <div class="modal-overlay" id="settings-modal">.
+// Yani ayrı bir "#modal-overlay" elemanı YOK; #settings-modal'ın kendisi 
+// zaten o rolü üstleniyor. Bu yüzden tek bir referans yeterli.
 const settingsModal = document.querySelector('#settings-modal');
-const modalCard = document.querySelector('.modal-card');
 const modalMinutesInput = document.querySelector('#modal-minutes-input');
 const modalCancelBtn = document.querySelector('#modal-cancel-btn');
 const modalSaveBtn = document.querySelector('#modal-save-btn');
@@ -45,8 +45,10 @@ let currentMode = 'focus';
 function updateDisplay() {
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = remainingSeconds % 60;
+
     const formattedMinutes = String(minutes).padStart(2, '0');
     const formattedSeconds = String(seconds).padStart(2, '0');
+
     minutesDisplay.textContent = formattedMinutes;
     secondsDisplay.textContent = formattedSeconds;
 }
@@ -60,13 +62,15 @@ function updateProgressBar() {
         ? FOCUS_DURATION_IN_SECONDS
         : BREAK_DURATION_IN_SECONDS;
 
-    // NOT: Eskiden burada hep FOCUS_DURATION_IN_SECONDS'a bölüyorduk. 
-    // Ama artık "Mola" modunda da bir ilerleme çubuğu göstermek istersek, 
-    // paydanın da MEVCUT moda göre değişmesi gerekiyor; aksi halde mola 
-    // modundayken çubuk %20 gibi anlamsız, hep-dolu-görünmeyen bir 
-    // değerde takılı kalırdı (300/1500 = %20). currentMode'a göre doğru 
-    // paydayı (totalSeconds) seçerek bu hatayı baştan önlüyoruz.
+    // DÜZELTME: Bu satır önceki versiyonda HER ZAMAN 
+    // FOCUS_DURATION_IN_SECONDS'a bölüyordu. Bu, "Mola" modundayken 
+    // (BREAK_DURATION_IN_SECONDS = 300 saniye üzerinden sayarken) 
+    // yanlış bir yüzde hesaplardı — örneğin mola başında 
+    // 300 / 1500 * 100 = %20 gösterip çubuğu neredeyse boş başlatırdı, 
+    // oysa mola YENİ başladığı için %100 dolu görünmesi gerekiyordu. 
+    // Şimdi currentMode'a bakıp DOĞRU toplam süreye bölüyoruz.
     const percentageRemaining = (remainingSeconds / totalSeconds) * 100;
+
     progressFill.style.width = `${percentageRemaining}%`;
 }
 
@@ -85,7 +89,7 @@ function tick() {
         remainingSeconds = 0;
         updateDisplay();
 
-        // YENİ: Moda geçmeden ÖNCE alarmı çalıp ortam seslerini durduruyoruz.
+        // YENİ: Süre bittiğinde önce ortam seslerini durdurup alarmı çal.
         playAlarmAndPauseAmbience();
 
         const nextMode = currentMode === 'focus' ? 'break' : 'focus';
@@ -115,7 +119,7 @@ function stopTimer() {
 
 
 // -----------------------------------------------------------------------
-// 7) BAŞLAT/DURAKLAT BUTONU
+// 7) BAŞLAT/DURAKLAT BUTONU: "TOGGLE" MANTIĞI
 // -----------------------------------------------------------------------
 function toggleTimer() {
     if (isRunning) {
@@ -177,17 +181,20 @@ modeButtons.forEach((button) => {
 
 
 // -----------------------------------------------------------------------
-// 8.2) ÖZEL SÜRE AYARI: MODAL MANTIĞI
+// 8.2) ÖZEL SÜRE AYARI — MODAL MANTIĞI
 // -----------------------------------------------------------------------
-// Modalı açan fonksiyon: input'u MEVCUT odaklanma süresiyle (dakika 
-// cinsinden) dolduruyoruz ki kullanıcı "şu an ne ayarlı" bilgisini görsün.
+// prompt()/alert() tabanlı eski mantığın YERİNE artık modal kartını 
+// açıp kapatan, kaydetme anında değerleri okuyan bir yapı kuruyoruz.
+
+// Modalı açan yardımcı fonksiyon. Açılırken input'a MEVCUT odaklanma 
+// süresini (dakika cinsinden) önceden dolduruyoruz.
 function openSettingsModal() {
     modalMinutesInput.value = FOCUS_DURATION_IN_SECONDS / 60;
     settingsModal.classList.add('is-open');
 
-    // Modal açılır açılmaz input'a odaklanmak (focus), kullanıcının 
-    // hemen yazmaya başlayabilmesini sağlar — fare ile ayrıca tıklamasına 
-    // gerek kalmaz. Küçük ama kullanışlı bir UX detayı.
+    // Kullanıcı modalı açar açmaz direkt yazmaya başlayabilsin diye 
+    // input'a otomatik odaklanıyoruz (focus() metodu, tarayıcının 
+    // imleci o elemana yerleştirmesini sağlar).
     modalMinutesInput.focus();
 }
 
@@ -198,15 +205,13 @@ function closeSettingsModal() {
 settingsBtn.addEventListener('click', openSettingsModal);
 modalCancelBtn.addEventListener('click', closeSettingsModal);
 
-// ARKAPLANA (OVERLAY) TIKLAYINCA KAPATMA:
-// settingsModal ZATEN overlay'in kendisi olduğu için, .modal-card İÇİNE 
-// tıklandığında da olay (event) yukarı "kabarır" (bubbling) ve bu 
-// listener'ı tetikler. Bunu istemiyoruz — kullanıcı kart içindeki 
-// input'a veya butonlara tıkladığında modal KAPANMAMALI, sadece 
-// GERÇEKTEN karartılmış arkaplana (karta değil) tıklandığında kapanmalı.
-// Bu yüzden event.target'ın TAM OLARAK settingsModal'ın kendisi olup 
-// olmadığını kontrol ediyoruz; eğer tıklanan yer modal-card'ın içindeki 
-// bir eleman ise event.target o iç eleman olur, settingsModal DEĞİL.
+// Overlay'e (kartın DIŞINDAKİ karartılmış alana) tıklanınca kapatma.
+// #settings-modal'ın kendisi hem overlay hem de kapsayıcı olduğu için, 
+// event.target'ın TAM OLARAK settingsModal'ın kendisi olup olmadığını 
+// kontrol ediyoruz. Eğer kullanıcı .modal-card İÇİNDEKİ bir yere 
+// (input, buton, başlık) tıklarsa, event.target o iç eleman olur ve 
+// settingsModal'a EŞİT olmadığı için modal kapanmaz — sadece kartın 
+// DIŞINDAKİ boşluğa tıklanınca kapanır.
 settingsModal.addEventListener('click', (event) => {
     if (event.target === settingsModal) {
         closeSettingsModal();
@@ -223,6 +228,7 @@ modalSaveBtn.addEventListener('click', () => {
 
     FOCUS_DURATION_IN_SECONDS = newFocusMinutes * 60;
 
+    // Sadece "focus" modundaysak VE sayaç durmuşsa ekrana hemen yansıt.
     if (currentMode === 'focus' && !isRunning) {
         remainingSeconds = FOCUS_DURATION_IN_SECONDS;
         updateDisplay();
@@ -247,23 +253,32 @@ updateProgressBar();
 // -----------------------------------------------------------------------
 // 10.1) AUDIO NESNELERİNİ OLUŞTURMA
 // -----------------------------------------------------------------------
-// NOT (kaynak URL'leri hakkında): Aşağıdaki linkler yer tutucudur — 
-// hangi ID'nin gerçekten "yağmur/kafe/şömine/alarm" sesine karşılık 
-// geldiğini buradan dinleyerek doğrulayamadım. mixkit.co üzerinden 
-// kendi seçtiğin sesin gerçek linkini alıp buraya yapıştırman gerekiyor.
-const rainSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3');
-const cafeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2529/2529-preview.mp3');
-const fireplaceSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2528/2528-preview.mp3');
+// NOT: Aşağıdaki Mixkit URL'leri yer tutucudur — hangi sesin gerçekten 
+// "yağmur", "kafe" ya da "şömine" olduğunu buradan doğrulayamadım. 
+// mixkit.co/free-sound-effects/ üzerinden doğru linkleri alıp buradaki 
+// src değerleriyle değiştirmen gerekiyor.
+// Doğrudan test edip kullanabileceğin ASMR ve yumuşak ses linkleri:
 
-// YENİ: Alarm sesi. loop=false OLMALI (varsayılanı zaten false, ama 
-// niyeti netleştirmek için açıkça yazıyoruz) — alarm sonsuza kadar 
-// çalmamalı, bir kere çalıp bitmeli ki "ended" olayını yakalayabilelim.
-const alarmSound = new Audio('ALARM_SESI_URL_BURAYA.mp3');
-alarmSound.loop = false;
+const rainSound = new Audio('https://cdn.pixabay.com/download/audio/2021/09/06/audio_75c32512a2.mp3?filename=light-rain-loop-2-87532.mp3'); 
+// Yağmur: Yumuşak, kesintisiz ve huzurlu bir arka plan yağmur sesi.
 
+const cafeSound = new Audio('https://cdn.pixabay.com/download/audio/2022/05/16/audio_db32c8c4a1.mp3?filename=coffeeshop-ambience-110034.mp3'); 
+// Kafe: Arkada boğuk, dikkat dağıtmayan sakin bir kahve dükkanı mırıltısı.
+
+const fireplaceSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_c37d579ef6.mp3?filename=fireplace-106518.mp3'); 
+// Şömine: Çıtırdayan, kulak yormayan sıcak odun sesleri.
+
+const alarmSound = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_02379e56e4.mp3?filename=soft-bell-notification-1497.mp3'); 
+// Alarm: Kulak tırmalamayan, kısa, yumuşak ve nazik bir bitiş zili.
 rainSound.loop = true;
 cafeSound.loop = true;
 fireplaceSound.loop = true;
+
+
+// YENİ: Alarm sesi — kısa, tek seferlik bir bildirim sesi. Bu da bir 
+// YER TUTUCUDUR, gerçek bir alarm/zil sesi URL'siyle değiştirmen gerekir.
+const alarmSound = new Audio('ALARM_SESI_URL_BURAYA.mp3');
+alarmSound.loop = false;
 
 const soundMap = {
     rain: rainSound,
@@ -271,15 +286,19 @@ const soundMap = {
     fireplace: fireplaceSound
 };
 
-// YENİ: soundKey -> o satırın TÜM ilgili elemanlarını tutan obje. Play/
-// Pause butonu ve alarm senkronizasyonu, bu elemanlara tek bir yerden 
-// (soundControls[key]) erişebilmek için buna ihtiyaç duyuyor.
+
+// -----------------------------------------------------------------------
+// 10.2) HER SES SATIRI İÇİN KONTROLLERİ KURMA (slider + play/pause butonu)
+// -----------------------------------------------------------------------
+// DEĞİŞTİ: Artık her satırın TÜM ilgili elemanlarını (audio, row, 
+// slider, valueLabel, toggleBtn) soundControls objesinde saklıyoruz. 
+// Bunun sebebi iki tane: 
+// 1) startSound/stopSound fonksiyonlarının, hem slider hem buton 
+//    tarafından ORTAK kullanılabilmesi (tekrar kod yazmamak için).
+// 2) Alarm bittiğinde "hangi sesler çalıyordu?" diye tekrar bu 
+//    elemanlara (özellikle toggleBtn ve row) erişebilmemiz gerekiyor.
 const soundControls = {};
 
-
-// -----------------------------------------------------------------------
-// 10.2) HER SES SATIRI İÇİN LİSTENER'LARI KURMA (slider + play/pause butonu)
-// -----------------------------------------------------------------------
 soundRows.forEach((row) => {
     const soundKey = row.dataset.sound;
     const slider = row.querySelector('.sound-slider');
@@ -301,10 +320,7 @@ soundRows.forEach((row) => {
         }
     });
 
-    // YENİ: Play/Pause butonu. Slider'ın SEVİYESİNİ bozmadan, sadece 
-    // çalma/durma durumunu değiştiriyor — bu yüzden startSound/stopSound 
-    // içinde slider.value'ya SADECE %0 iken (güvenli varsayılan için) 
-    // dokunuyoruz, aksi halde hep olduğu gibi bırakıyoruz.
+    // YENİ: Play/Pause butonu. audio.paused durumuna göre TOGGLE yapıyor.
     toggleBtn.addEventListener('click', () => {
         if (audio.paused) {
             startSound(soundKey);
@@ -314,16 +330,21 @@ soundRows.forEach((row) => {
     });
 });
 
-// YENİ: Bir sesi başlatan, gerektiğinde güvenli varsayılan sesi (%30) 
-// uygulayan ve ikon/class durumunu güncelleyen ORTAK fonksiyon. Hem 
-// slider'dan hem play/pause butonundan çağrılıyor.
+
+// -----------------------------------------------------------------------
+// 10.3) SES BAŞLATMA / DURDURMA — ORTAK FONKSİYONLAR
+// -----------------------------------------------------------------------
+// startSound: Bir sesi başlatan, ikonu ve .is-playing class'ını 
+// güncelleyen ORTAK fonksiyon. Hem slider'dan hem play/pause 
+// butonundan hem de alarm-sonrası senkronizasyondan çağrılıyor.
 function startSound(soundKey) {
     const { audio, row, slider, valueLabel, toggleBtn } = soundControls[soundKey];
 
-    // GÜVENLİ VARSAYILAN SES: Kullanıcı slider'a hiç dokunmadan doğrudan 
-    // Play'e bastıysa slider hâlâ 0'dadır; sesi %0 sesle başlatmanın 
-    // anlamı yok. row üzerindeki data-default-volume="30" attribute'unu 
-    // okuyup slider'ı ve ekrandaki yüzdeyi buna göre güncelliyoruz.
+    // GÜVENLİ VARSAYILAN SES: Kullanıcı slider'a hiç dokunmadan 
+    // doğrudan Play'e bastıysa, slider hâlâ 0'dadır. Sesi %0 sesle 
+    // başlatmanın anlamı yok, bu yüzden data-default-volume'daki 
+    // (%30) değeri kullanıyoruz. "|| 30" fallback'i, attribute hiç 
+    // yoksa (Number(undefined) -> NaN, "falsy") devreye giriyor.
     if (Number(slider.value) === 0) {
         const defaultVolume = Number(row.dataset.defaultVolume) || 30;
         slider.value = defaultVolume;
@@ -339,7 +360,7 @@ function startSound(soundKey) {
     row.classList.add('is-playing');
 }
 
-// YENİ: Bir sesi durduran, ikon/class durumunu geri alan ORTAK fonksiyon.
+// stopSound: Bir sesi durduran, ikonu ve class'ı geri alan ORTAK fonksiyon.
 function stopSound(soundKey) {
     const { audio, row, toggleBtn } = soundControls[soundKey];
     audio.pause();
@@ -349,26 +370,13 @@ function stopSound(soundKey) {
 
 
 // -----------------------------------------------------------------------
-// 10.3) TÜM SESLERİ SUSTURMA: muteAllSounds()
+// 10.4) AKILLI ALARM VE SES SENKRONİZASYONU
 // -----------------------------------------------------------------------
-function muteAllSounds() {
-    Object.keys(soundControls).forEach((soundKey) => {
-        stopSound(soundKey);
-        const { slider, valueLabel } = soundControls[soundKey];
-        slider.value = 0;
-        valueLabel.textContent = '0%';
-    });
-}
-
-
-// -----------------------------------------------------------------------
-// 10.4) YENİ: AKILLI ALARM VE SES SENKRONİZASYONU
-// -----------------------------------------------------------------------
-// Alarm çalarken PAUSE ettiğimiz seslerin listesi. Dizi (array) olmasının 
-// sebebi: aynı anda birden fazla ortam sesi (örn. hem yağmur hem kafe) 
-// çalıyor olabilir; hangilerini durdurduğumuzu hatırlamamız gerekiyor ki 
-// alarm bitince SADECE onları geri açalım — kullanıcının hiç açmadığı 
-// bir sesi yanlışlıkla başlatmayalım.
+// soundsPausedByAlarm: Alarm çalarken PAUSE ettiğimiz seslerin listesi. 
+// Dizi kullanmamızın sebebi: aynı anda birden fazla ortam sesi (örn. 
+// hem yağmur hem kafe) çalıyor olabilir; alarm bitince SADECE bunları 
+// geri açmalıyız — kullanıcının hiç açmadığı bir sesi yanlışlıkla 
+// başlatmamalıyız.
 let soundsPausedByAlarm = [];
 
 function playAlarmAndPauseAmbience() {
@@ -388,12 +396,34 @@ function playAlarmAndPauseAmbience() {
     });
 }
 
-// 'ended' olayı: Ses dosyası SONUNA kadar çalıp DOĞAL olarak bittiğinde 
-// tetiklenir (pause() ile durdurulduğunda DEĞİL). Bu yüzden "alarm bitti, 
-// ortam seslerine dönebiliriz" bilgisini almak için doğru olay budur.
+// 'ended' olayı: Ses dosyası SONUNA kadar çalıp doğal olarak bittiğinde 
+// tetiklenir (pause() ile durdurulduğunda DEĞİL). Bu yüzden "alarm 
+// bitti, ortam seslerine dönebiliriz" bilgisini almak için doğru 
+// olay budur.
 alarmSound.addEventListener('ended', () => {
     soundsPausedByAlarm.forEach((soundKey) => {
         startSound(soundKey);
     });
     soundsPausedByAlarm = [];
 });
+
+
+// -----------------------------------------------------------------------
+// 10.5) TÜM SESLERİ SUSTURMA: muteAllSounds()
+// -----------------------------------------------------------------------
+// DEĞİŞTİ: Artık stopSound()'u çağırıyor ki play/pause butonlarının 
+// ikonu ve .is-playing class'ı da tutarlı kalsın (eskiden sadece 
+// audio.pause() çağrılıyordu, buton görsel olarak "çalıyor" kalmaya 
+// devam ederdi).
+function muteAllSounds() {
+    Object.keys(soundControls).forEach((soundKey) => {
+        stopSound(soundKey);
+    });
+
+    soundRows.forEach((row) => {
+        const slider = row.querySelector('.sound-slider');
+        const valueLabel = row.querySelector('.sound-value');
+        slider.value = 0;
+        valueLabel.textContent = '0%';
+    });
+}
