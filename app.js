@@ -323,7 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // anahtarıyla (2) HARFİYEN aynı olmalı — çünkü satır 
     // "soundMap[row.dataset.sound]" ile eşleştirme yapıyor ve JavaScript 
     // obje anahtarlarında da büyük/küçük harf ayrımı GEÇERLİDİR.
-    const bookSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/f/f6/Page-flip.ogg');
+    // Dış sunucu/CORS hatası verme ihtimali sıfır olan dahili ses çözümü
+const bookSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJ_u7_u_7-7u7O7u7O7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u');
     const keyboardSound = new Audio('https://actions.google.com/sounds/v1/office/typing_on_keyboard.ogg');
 
     rainSound.loop = true;
