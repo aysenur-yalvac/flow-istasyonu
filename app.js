@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rainSound.loop = true;
     cafeSound.loop = true;
     fireplaceSound.loop = true;
-    pageTurnSound.loop = true;
+    bookSound.loop = true;
     keyboardSound.loop = true;
 
     // ÖNEMLİ KURAL (senin talebin): Alarm linki ARTIK ASLA boş/yer tutucu 
