@@ -300,7 +300,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const rainSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3');
     const cafeSound = new Audio('https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg');
     const fireplaceSound = new Audio('https://actions.google.com/sounds/v1/ambiences/fire.ogg');
-    const bookSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8702422c5.mp3?filename=paper-slide-and-flipping-103328.mp3');
+
+    // YENİ: Kitap sayfası çevirme ve klavye yazma sesleri (ASMR).
+    //
+    // DÜZELTME (bu güncellemede): "ReferenceError: booksound is not defined" 
+    // hatasının kök nedeni, projenin bir yerinde ses değişkeninin adıyla, 
+    // başka bir yerde ona referans veren adın BİRBİRİNE TAM UYMAMASIYDI 
+    // (JavaScript değişken adlarında BÜYÜK/küçük harf duyarlılığı vardır — 
+    // "bookSound" ile "booksound" ya da "BookSound" JS için üç FARKLI 
+    // isimdir; tek bir harfin büyük/küçük olması bile "tanımlı değil" 
+    // hatasına yol açar). Bunu bir daha yaşamamak için üç farklı yerdeki 
+    // isimlendirmeyi ŞİMDİ tek bir tabloya bağlıyoruz — kitap sesiyle 
+    // ilgili HERHANGİ bir şey eklerken/değiştirirken bu üçü DAİMA birebir 
+    // eşleşmeli:
+    //
+    //   1) JS DEĞİŞKEN ADI     -> bookSound            (bu satırda tanımlı)
+    //   2) soundMap ANAHTARI   -> book                 (aşağıda tanımlı)
+    //   3) HTML data-sound     -> data-sound="book"     (index.html'de)
+    //
+    // Üçü de "book" kelimesini temel alıyor; JS TARAFI (1 ve 2) her zaman 
+    // camelCase + düz anahtar olacak, HTML TARAFI (3) ise soundMap 
+    // anahtarıyla (2) HARFİYEN aynı olmalı — çünkü satır 
+    // "soundMap[row.dataset.sound]" ile eşleştirme yapıyor ve JavaScript 
+    // obje anahtarlarında da büyük/küçük harf ayrımı GEÇERLİDİR.
+    const bookSound = new Audio('https://actions.google.com/sounds/v1/foley/flipping_newspaper_pages.ogg');
     const keyboardSound = new Audio('https://actions.google.com/sounds/v1/office/typing_on_keyboard.ogg');
 
     rainSound.loop = true;
@@ -318,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rain: rainSound,
         cafe: cafeSound,
         fireplace: fireplaceSound,
-        book: pageTurnSound,
+        book: bookSound,
         keyboard: keyboardSound
     };
 
@@ -363,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     attachAudioDiagnostics(rainSound, 'rain');
     attachAudioDiagnostics(cafeSound, 'cafe');
     attachAudioDiagnostics(fireplaceSound, 'fireplace');
-    attachAudioDiagnostics(pageTurnSound, 'book');
+    attachAudioDiagnostics(bookSound, 'book');
     attachAudioDiagnostics(keyboardSound, 'keyboard');
     attachAudioDiagnostics(alarmSound, 'alarm');
 
@@ -391,11 +414,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // { once: true }: Bu dinleyicinin SADECE İLK tıklamada çalışıp 
     // kendini otomatik olarak kaldırmasını sağlar; her tıklamada 
     // gereksiz yere 6 sesi aç/kapa yapmasını istemeyiz.
-    // GÜNCELLENDİ: Diziye yeni eklenen pageTurnSound ve keyboardSound da 
+    // GÜNCELLENDİ: Diziye yeni eklenen bookSound ve keyboardSound da 
     // dahil edildi — onlar da sonradan (Play butonuyla) jestsiz bir 
     // bağlamdan çağrılabilecek şekilde davranabilir, aynı önlem geçerli.
     function unlockAudioPlayback() {
-        [rainSound, cafeSound, fireplaceSound, pageTurnSound, keyboardSound, alarmSound].forEach((audio) => {
+        [rainSound, cafeSound, fireplaceSound, bookSound, keyboardSound, alarmSound].forEach((audio) => {
             audio.play()
                 .then(() => {
                     audio.pause();
