@@ -293,8 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cafeSound.loop = true;
     fireplaceSound.loop = true;
 
-    // Harici sunucu bağımlılığı ve zaman aşımı (TIMED_OUT) riski olmayan dahili ses çözümü
-const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    const alarmSound = new Audio('ALARM_SESI_URL_BURAYA.mp3');
     alarmSound.loop = false;
 
     const soundMap = {
@@ -483,60 +482,84 @@ const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_s
 
 
     // -----------------------------------------------------------------------
-    // 10.4) AKILLI ALARM VE SES SENKRONİZASYONU
+    // 10.4) AKILLI ALARM — 3 TEKRARLI BİP + ORTAM SESLERİNİN KALICI SUSMASI
     // -----------------------------------------------------------------------
-    let soundsPausedByAlarm = [];
+    // DEĞİŞTİ (önceki versiyona göre): Eskiden alarm çalarken ortam 
+    // sesleri sadece GEÇİCİ olarak durduruluyordu ve alarm bitince 
+    // (alarmSound'un 'ended' olayında) kaldığı yerden otomatik olarak 
+    // devam ediyordu. Artık bu davranışı TAMAMEN KALDIRIYORUZ: alarm 
+    // tetiklendiği an ortam sesleri KALICI olarak susuyor, kullanıcı 
+    // isterse bir sonraki odaklanma/mola turunda kendi elleriyle 
+    // (Play butonuna basarak) tekrar açmalı. Bu yüzden artık "hangi 
+    // sesler çalıyordu?" bilgisini SAKLAMIYORUZ (eski 
+    // `soundsPausedByAlarm` dizisine ve onu okuyan 'ended' 
+    // dinleyicisine artık hiç ihtiyaç yok — ikisini de sildik).
 
-    function playAlarmAndPauseAmbience() {
-        soundsPausedByAlarm = [];
+    // Bip sayısı ve aralardaki boşluk, tek yerden yönetilsin diye 
+    // birer sabit (constant) olarak tanımlıyoruz. İleride "3 yerine 5 
+    // kere çalsın" ya da "boşluğu 600ms yapalım" denirse, tek satır 
+    // değiştirmek yeterli olacak.
+    const ALARM_BEEP_COUNT = 3;
+    const ALARM_BEEP_GAP_MS = 400;
 
-        Object.keys(soundControls).forEach((soundKey) => {
-            const { audio } = soundControls[soundKey];
-            if (!audio.paused) {
-                stopSound(soundKey);
-                soundsPausedByAlarm.push(soundKey);
-            }
-        });
+    // playSingleBeep(remainingBeeps): Alarmı BİR KEZ çalan ve bittiğinde 
+    // (gerçekten bitmesini BEKLEYEREK) kendini tekrar tetikleyen 
+    // "özyinelemeli" (recursive) bir fonksiyon.
+    //
+    // NEDEN setInterval yerine 'ended' olayını temel alıyoruz? Kullanıcının 
+    // önerdiği ilk yaklaşım (setInterval ile sabit 400ms'de bir play() 
+    // çağırmak), alarm SESİ 400ms'den UZUN sürerse bir sorun yaratır: 
+    // bir önceki bip DAHA BİTMEDEN currentTime=0 ile baştan sarılıp 
+    // tekrar başlatılır — bu da bipin YARIDA KESİLİP yeniden başlaması 
+    // gibi tuhaf, kesik kesik bir ses hissi verir. Bunun yerine, HER 
+    // bipin kendi 'ended' olayını (yani sesin GERÇEKTEN bittiğini) 
+    // bekleyip, ANCAK ondan sonra 400ms'lik boşluğu ekliyoruz. Bu, 
+    // alarm dosyasının süresi ne olursa olsun (kısa ya da uzun) HER 
+    // bipin TAM olarak duyulmasını garanti eder.
+    function playSingleBeep(remainingBeeps) {
+        if (remainingBeeps <= 0) {
+            return; // Tüm bipler tamamlandı, döngüyü burada bitiriyoruz.
+        }
 
-        // KRİTİK FARK — alarm sesi, ambiyans seslerinden (rain/cafe/fireplace) 
-        // TEKNİK OLARAK FARKLI bir konumdan çağrılıyor:
-        // startSound() bir 'click' ya da 'input' olayının İÇİNDEN, yani 
-        // GERÇEK bir kullanıcı jesti (gesture) sırasında çağrılıyor — 
-        // tarayıcı bunu her zaman güvenli sayar. AMA bu fonksiyon 
-        // (playAlarmAndPauseAmbience), tick() üzerinden setInterval'in 
-        // HER SANİYE tetiklediği bir zamanlayıcı callback'i İÇİNDEN 
-        // çağrılıyor. setInterval callback'leri, kullanıcının dakikalar 
-        // önce Başlat'a tıklamış olmasından TAMAMEN BAĞIMSIZ, tarayıcının 
-        // kendi zamanlama motoru tarafından tetiklenir — yani play() 
-        // çağrıldığı ANDA ortada "taze" bir kullanıcı jesti YOKTUR. 
-        // Özellikle Safari gibi katı tarayıcılarda bu, alarmın 
-        // NotAllowedError ile reddedilmesine yol açabilir.
-        //
-        // ÇÖZÜM: Aşağıdaki (10.1.2) "unlockAudioPlayback" fonksiyonu, 
-        // sayfadaki İLK gerçek tıklamada tüm ses nesnelerini (alarm 
-        // dahil) bir kere play()+pause() ile "önden ısıtıyor". Çoğu 
-        // tarayıcı, bir medya elemanının GEÇMİŞTE en az bir kez gerçek 
-        // jestle çalındığını hatırlar ve o SPESİFİK elemana daha sonra 
-        // jestsiz play() çağrılmasına izin verir. Bu satırdaki .catch() 
-        // hâlâ bir güvenlik ağı olarak duruyor, ama asıl kalıcı çözüm 
-        // unlockAudioPlayback'in en baştan çalışmış olmasıdır.
-        alarmSound.currentTime = 0;
+        alarmSound.currentTime = 0; // Her bipte baştan başlasın.
         alarmSound.play().catch((error) => {
             console.error(
-                `Alarm sesi çalınamadı — error.name: "${error.name}". ` +
+                `Alarm bipi çalınamadı — error.name: "${error.name}". ` +
                 (error.name === 'NotAllowedError'
-                    ? 'Tarayıcı, kullanıcı jesti olmadan tetiklenen bu play() çağrısını engelledi (bkz. yukarıdaki yorum).'
-                    : 'Muhtemel sebep: alarm dosyasının URL\'si geçersiz/erişilemez (bkz. yukarıdaki [Ses Tanı] logu).')
+                    ? 'Tarayıcı, kullanıcı jesti olmadan tetiklenen bu play() çağrısını engelledi.'
+                    : 'Muhtemel sebep: alarm dosyasının URL\'si geçersiz/erişilemez (bkz. [Ses Tanı] logu).')
             );
         });
+
+        // { once: true }: Bu dinleyici SADECE bir sonraki 'ended' 
+        // olayında çalışıp kendini otomatik kaldırır. Bunu belirtmezsek, 
+        // her bip turunda YENİ bir 'ended' dinleyicisi eklenir ve eskiler 
+        // hiç temizlenmeden birikir — birkaç sayaç turu sonra aynı 
+        // 'ended' olayında onlarca dinleyici birden tetiklenir.
+        alarmSound.addEventListener('ended', () => {
+            // Bu bip bitti, sırada BAŞKA bip kaldıysa (remainingBeeps > 1) 
+            // 400ms bekleyip bir sonrakini başlatıyoruz.
+            setTimeout(() => {
+                playSingleBeep(remainingBeeps - 1);
+            }, ALARM_BEEP_GAP_MS);
+        }, { once: true });
     }
 
-    alarmSound.addEventListener('ended', () => {
-        soundsPausedByAlarm.forEach((soundKey) => {
-            startSound(soundKey);
-        });
-        soundsPausedByAlarm = [];
-    });
+    function playAlarmAndPauseAmbience() {
+        // 1) Ortam seslerini KALICI olarak durduruyoruz. muteAllSounds() 
+        // zaten hem audio.pause() çağırıyor HEM DE slider'ları/ikonları 
+        // %0'a ve "▶" durumuna geri çeviriyor — yani "geçici durdurma" 
+        // değil, tam bir sıfırlama. Bu fonksiyonu section 10.5'te 
+        // TANIMLIYORUZ ama JavaScript'te function bildirimleri (function 
+        // declaration) aynı scope içinde HOISTING sayesinde dosyanın 
+        // NERESİNDE tanımlandığına bakılmaksızın çağrılabilir — bu 
+        // yüzden burada, dosyada aşağıda duran bir fonksiyonu güvenle 
+        // çağırabiliyoruz.
+        muteAllSounds();
+
+        // 2) Alarmı 3 kez, aralarında 400ms boşlukla çalmaya başlıyoruz.
+        playSingleBeep(ALARM_BEEP_COUNT);
+    }
 
 
     // -----------------------------------------------------------------------
