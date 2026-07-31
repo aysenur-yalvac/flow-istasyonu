@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rainSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3');
     const cafeSound = new Audio('https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg');
     const fireplaceSound = new Audio('https://actions.google.com/sounds/v1/ambiences/fire.ogg');
-    const pageTurnSound = new Audio('https://actions.google.com/sounds/v1/foley/flipping_newspaper_pages.ogg');
+    const bookSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8702422c5.mp3?filename=paper-slide-and-flipping-103328.mp3');
     const keyboardSound = new Audio('https://actions.google.com/sounds/v1/office/typing_on_keyboard.ogg');
 
     rainSound.loop = true;
