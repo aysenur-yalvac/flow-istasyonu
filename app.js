@@ -293,7 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cafeSound.loop = true;
     fireplaceSound.loop = true;
 
-    const alarmSound = new Audio('ALARM_SESI_URL_BURAYA.mp3');
+    // Doğru ve çalışan Wikimedia alarm ses linki ile güncellenmiş tanım:
+    const alarmSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/8/8b/Bell_to_start.ogg');
     alarmSound.loop = false;
 
     const soundMap = {
