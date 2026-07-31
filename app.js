@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cafeSound.loop = true;
     fireplaceSound.loop = true;
 
-    const alarmSound = new Audio('ALARM_SESI_URL_BURAYA.mp3');
+    const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
     alarmSound.loop = false;
 
     const soundMap = {
