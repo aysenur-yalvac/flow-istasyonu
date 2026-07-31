@@ -259,13 +259,19 @@ updateProgressBar();
 // src değerleriyle değiştirmen gerekiyor.
 // Doğrudan test edip kullanabileceğin ASMR ve yumuşak ses linkleri:
 
-const rainSound = new Audio('https://cdn.pixabay.com/download/audio/2021/09/06/audio_75c32512a2.mp3?filename=light-rain-loop-2-87532.mp3'); 
-// Yağmur: Yumuşak, kesintisiz ve huzurlu bir arka plan yağmur sesi.
+// Doğrudan çalışan, CORS engeline takılmayan ASMR ve ortam sesleri:
 
-const cafeSound = new Audio('https://cdn.pixabay.com/download/audio/2022/05/16/audio_db32c8c4a1.mp3?filename=coffeeshop-ambience-110034.mp3'); 
-// Kafe: Arkada boğuk, dikkat dağıtmayan sakin bir kahve dükkanı mırıltısı.
+const rainSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/b/b3/Rain_on_tent_-_ambient_sound.ogg');
+// Yağmur: Wikimedia Commons üzerinden doğrudan erişilebilen çadırda yağmur sesi.
 
-const fireplaceSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_c37d579ef6.mp3?filename=fireplace-106518.mp3'); 
+const cafeSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/3/36/Coffee_shop_ambience.ogg');
+// Kafe: Arka plan kahve dükkanı mırıltısı.
+
+const fireplaceSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/5/5a/Fireplace_sounds.ogg');
+// Şömine: Doğal ve sakin odun çıtırtısı.
+
+
+// Alarm: Kulak tırmalamayan, kısa ve yumuşak bir bildirim zili.
 // Şömine: Çıtırdayan, kulak yormayan sıcak odun sesleri.
 
 rainSound.loop = true;
@@ -275,7 +281,7 @@ fireplaceSound.loop = true;
 
 // YENİ: Alarm sesi — kısa, tek seferlik bir bildirim sesi. Bu da bir 
 // YER TUTUCUDUR, gerçek bir alarm/zil sesi URL'siyle değiştirmen gerekir.
-const alarmSound = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_02379e56e4.mp3?filename=soft-bell-notification-1497.mp3');
+const alarmSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/8/8b/Bell_to_start.ogg');
 alarmSound.loop = false;
 
 const soundMap = {
