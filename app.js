@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // anahtarıyla (2) HARFİYEN aynı olmalı — çünkü satır 
     // "soundMap[row.dataset.sound]" ile eşleştirme yapıyor ve JavaScript 
     // obje anahtarlarında da büyük/küçük harf ayrımı GEÇERLİDİR.
-    const bookSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/3/36/Coffee_shop_ambience.ogg');
+    const bookSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/f/f6/Page-flip.ogg');
     const keyboardSound = new Audio('https://actions.google.com/sounds/v1/office/typing_on_keyboard.ogg');
 
     rainSound.loop = true;
