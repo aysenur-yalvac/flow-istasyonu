@@ -293,8 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cafeSound.loop = true;
     fireplaceSound.loop = true;
 
-    // Doğru ve çalışan Wikimedia alarm ses linki ile güncellenmiş tanım:
-    const alarmSound = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_02379e56e4.mp3?filename=soft-bell-notification-1497.mp3');
+    // Harici sunucu bağımlılığı ve zaman aşımı (TIMED_OUT) riski olmayan dahili ses çözümü
+const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
     alarmSound.loop = false;
 
     const soundMap = {
