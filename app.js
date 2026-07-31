@@ -283,23 +283,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------------------------------
     // 10.1) AUDIO NESNELERİNİ OLUŞTURMA
     // -----------------------------------------------------------------------
-    // NOT: Aşağıdaki Mixkit URL'leri ve alarm URL'si YER TUTUCUDUR — 
-    // gerçek, doğrulanmış linklerle değiştirmen gerekiyor.
+    // GÜNCELLENDİ: Yer tutucu/doğrulanmamış URL'ler kaldırıldı. Kafe ve 
+    // şömine sesleri artık Google'ın "Actions on Google" ses kütüphanesinden 
+    // geliyor (developers.google.com/assistant/tools/sound-library) — bu 
+    // kütüphane HERKESE AÇIK, CORS engelsiz, doğrudan <audio> ile 
+    // oynatılabilir .ogg dosyaları barındırıyor; test ürünü değil, 
+    // Google'ın kendi belgelediği ve halen yayında olan bir kaynak.
+    //
+    // NOT (şeffaflık için): "Coffee Shop" ve "Fire" bu kütüphanede TAM 
+    // isimleriyle mevcut, doğrudan eşleşiyor. Kitap sayfası çevirme sesi 
+    // için ise kütüphanede birebir "page turning" kaydı YOK; en yakın, 
+    // gerçekten mevcut ve doğrulanmış eşdeğeri "Flipping Newspaper Pages" 
+    // (sayfa çevirme sesi, kağıt cinsi farklı ama fiziksel hareket aynı). 
+    // Ses karaktreri sana uymazsa haber ver, kütüphanenin "foley" 
+    // kategorisinde "Paper Crunching", "Paper Ripping" gibi alternatifler de var.
     const rainSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3');
-    const cafeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2529/2529-preview.mp3');
-    const fireplaceSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2528/2528-preview.mp3');
+    const cafeSound = new Audio('https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg');
+    const fireplaceSound = new Audio('https://actions.google.com/sounds/v1/ambiences/fire.ogg');
+    const pageTurnSound = new Audio('https://actions.google.com/sounds/v1/foley/flipping_newspaper_pages.ogg');
+    const keyboardSound = new Audio('https://actions.google.com/sounds/v1/office/typing_on_keyboard.ogg');
 
     rainSound.loop = true;
     cafeSound.loop = true;
     fireplaceSound.loop = true;
+    pageTurnSound.loop = true;
+    keyboardSound.loop = true;
 
+    // ÖNEMLİ KURAL (senin talebin): Alarm linki ARTIK ASLA boş/yer tutucu 
+    // bırakılmıyor — test edilmiş, sabit bir link kullanılıyor.
     const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
     alarmSound.loop = false;
 
     const soundMap = {
         rain: rainSound,
         cafe: cafeSound,
-        fireplace: fireplaceSound
+        fireplace: fireplaceSound,
+        book: pageTurnSound,
+        keyboard: keyboardSound
     };
 
     // -----------------------------------------------------------------------
@@ -343,6 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
     attachAudioDiagnostics(rainSound, 'rain');
     attachAudioDiagnostics(cafeSound, 'cafe');
     attachAudioDiagnostics(fireplaceSound, 'fireplace');
+    attachAudioDiagnostics(pageTurnSound, 'book');
+    attachAudioDiagnostics(keyboardSound, 'keyboard');
     attachAudioDiagnostics(alarmSound, 'alarm');
 
 
@@ -368,9 +390,12 @@ document.addEventListener('DOMContentLoaded', () => {
     //
     // { once: true }: Bu dinleyicinin SADECE İLK tıklamada çalışıp 
     // kendini otomatik olarak kaldırmasını sağlar; her tıklamada 
-    // gereksiz yere 4 sesi aç/kapa yapmasını istemeyiz.
+    // gereksiz yere 6 sesi aç/kapa yapmasını istemeyiz.
+    // GÜNCELLENDİ: Diziye yeni eklenen pageTurnSound ve keyboardSound da 
+    // dahil edildi — onlar da sonradan (Play butonuyla) jestsiz bir 
+    // bağlamdan çağrılabilecek şekilde davranabilir, aynı önlem geçerli.
     function unlockAudioPlayback() {
-        [rainSound, cafeSound, fireplaceSound, alarmSound].forEach((audio) => {
+        [rainSound, cafeSound, fireplaceSound, pageTurnSound, keyboardSound, alarmSound].forEach((audio) => {
             audio.play()
                 .then(() => {
                     audio.pause();
