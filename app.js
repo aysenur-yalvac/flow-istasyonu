@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fireplaceSound.loop = true;
 
     // Doğru ve çalışan Wikimedia alarm ses linki ile güncellenmiş tanım:
-    const alarmSound = new Audio('https://upload.wikimedia.org/wikipedia/commons/8/8b/Bell_to_start.ogg');
+    const alarmSound = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_02379e56e4.mp3?filename=soft-bell-notification-1497.mp3');
     alarmSound.loop = false;
 
     const soundMap = {
