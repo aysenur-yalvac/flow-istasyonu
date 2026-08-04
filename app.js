@@ -342,7 +342,7 @@ const bookSound = new Audio('sesler/pageturn.mp3');
         rain: rainSound,
         cafe: cafeSound,
         fireplace: fireplaceSound,
-        book: bookSound,
+        book: bookSound, 
         keyboard: keyboardSound
     };
 

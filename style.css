@@ -1,52 +1,62 @@
 /* ==========================================================================
-   1) CSS DEĞİŞKENLERİ (DESIGN TOKENS)
+   1) CSS DEĞİŞKENLERİ (DESIGN TOKENS) — PASTEL "İNCİK BONCUK" TEMASI
    ==========================================================================
-   Neden en başta tanımlıyoruz?
-   Çünkü tüm renk, boşluk ve gölge değerlerini TEK bir yerden yönetmek 
-   istiyoruz. Yarın "vurgu rengini biraz daha koyu yapalım" dediğimizde,
-   50 farklı satırda arama yapmak yerine sadece burada 1 satır değiştireceğiz.
-   Bu yaklaşıma "Design Token" sistemi denir; profesyonel arayüzlerin 
-   neredeyse tamamı bu mantıkla kurulur.
-
-   Palet fikrimiz: Şömine/kor (ember) temalı SICAK bir koyu tema.
-   Klasik "siyah + neon yeşil" tech temasından kaçınıp, sesler arasında 
-   yer alan "şömine" imgesinden ilham alan kehribar/turuncu bir vurgu 
-   rengi seçtik. Bu, hem "dark mode" isteğini karşılıyor hem de 
-   şablon/kalıp bir görünümden uzaklaşıyor.
+   TASARIM YÖNÜ: Koyu kor/ember temasından tamamen çıkıp, ferah, açık 
+   renkli, kız çocuğu defteri / şeker kutusu havasında pastel bir palete 
+   geçiyoruz. Üç ana vurgu rengi kullanıyoruz — pembe, lila, nane yeşili — 
+   ve bunları TEK bir öğede (ilerleme çubuğunda) bir arada, geri kalan her 
+   yerde ise TEK TEK, ölçülü şekilde kullanıyoruz. Bu, "her yeri aynı anda 
+   renklendirme" tuzağına düşmeden hem sevimli hem düzenli bir görünüm verir.
 ------------------------------------------------------------------------- */
 :root {
-    /* Arkaplan tonları: Saf siyah (#000) yerine hafif kahverengiye çalan, 
-       "sıcak" bir koyu ton kullanıyoruz. Bu, göze saf siyahtan daha az 
-       yorucu gelir ve daha "premium" bir his verir. */
-    --color-bg: #14120F;
-    --color-panel: #1D1A16;
-    --color-panel-raised: #262119;
-    --color-border: #35302A;
+    /* Arkaplan: lavanta pembesi / pudra kremi. Koyu temanın tam tersi — 
+       artık panel'ler arkaplandan "karanlıktan aydınlığa çıkarak" değil, 
+       BEYAZLIKLARIYLA öne çıkıyor. */
+    --color-bg: #FFF0F5;
+    --color-panel: #FFFFFF;
+    --color-panel-raised: #FFFBFD;
+    --color-border: #F5D9E8;
 
-    /* Metin tonları: Saf beyaz yerine, arkaplanla uyumlu kırık bir beyaz. */
-    --color-text-primary: #EDE8DF;
-    --color-text-secondary: #9A9184;
-    --color-text-muted: #665F54;
+    /* Metin tonları: boğucu siyah yerine sıcak, yumuşak bir kahve-lila 
+       karışımı. Saf siyahın bu paletteki pastel tonlarla çarpışıp 
+       "sert" durmasını istemiyoruz. */
+    --color-text-primary: #6B4A5C;
+    --color-text-secondary: #A98CA0;
+    --color-text-muted: #CBB4C4;
 
-    /* Vurgu rengi: Kor/ember turuncusu. Şöminenin ateşinden esinlenildi. */
-    --color-accent: #E88C4D;
-    --color-accent-dim: #6B4A2E;
-    --color-accent-soft: rgba(232, 140, 77, 0.14);
+    /* Vurgu renkleri — üç pastel ton: */
+    --color-accent-pink: #FFB6C1;       /* açık pembe — ana vurgu */
+    --color-accent-pink-deep: #F78CA2;  /* metin/buton üzerinde okunaklı olsun diye biraz koyulaştırılmış pembe */
+    --color-accent-lilac: #D8BFEA;      /* pastel lila — ikincil vurgu */
+    --color-accent-lilac-deep: #B79BD1; /* lila'nın koyusu, kontrast gereken yerlerde */
+    --color-accent-mint: #B7ECD8;       /* nane yeşili — üçüncül vurgu / detay rengi */
+    --color-accent-mint-deep: #8FDBBF;
 
-    /* Boşluk (spacing) ölçeği: 4px'in katları. Tutarlı boşluklar için 
-       rastgele piksel değerleri yerine bu ölçekten seçim yapacağız. */
+    /* Eskiden --color-accent-dim/soft olarak kullanılan yumuşak "hover" 
+       katmanları; artık pembenin çok açık bir dolgu tonu. */
+    --color-accent-soft: rgba(255, 182, 193, 0.28);
+
+    /* Boşluk (spacing) ölçeği: değişmedi, hâlâ 4px'in katları. */
     --space-xs: 8px;
     --space-sm: 12px;
     --space-md: 20px;
     --space-lg: 32px;
     --space-xl: 48px;
 
-    /* Köşe yuvarlaklığı: Panellerde büyük, butonlarda orta ölçekte kullanacağız. */
-    --radius-lg: 20px;
-    --radius-md: 12px;
-    --radius-sm: 8px;
+    /* Köşe yuvarlaklığı: senin istediğin gibi belirgin şekilde büyütüldü — 
+       kartlar artık "tombul", butonlar "hap" gibi duruyor. */
+    --radius-lg: 28px;  /* panel/kart/modal */
+    --radius-md: 20px;  /* buton/input */
+    --radius-sm: 14px;  /* küçük rozet/etiket gibi öğeler */
 
-    /* Yazı tipleri: index.html'de tanımladığımız Google Font aileleri. */
+    /* Yazı tipleri: index.html'de zaten Space Grotesk + Inter yüklü 
+       olduğu için (sadece style.css güncelleniyor, HTML'e dokunmuyoruz) 
+       fontları DEĞİŞTİRMEDİK — pastel paletle birlikte yine de şık 
+       duruyorlar. NOT: Daha "yusyuvarlak/sevimli" bir görünüm için 
+       "Quicksand" ya da "Fredoka" gibi bir Google Font eklemek istersen, 
+       bunun için index.html'deki <link> etiketine de dokunmamız gerekir 
+       — istersen bir sonraki adımda onu da ekleyebilirim.
+    */
     --font-display: "Space Grotesk", "Segoe UI", sans-serif;
     --font-body: "Inter", "Segoe UI", sans-serif;
 }
@@ -54,12 +64,7 @@
 /* ==========================================================================
    2) SIFIRLAMA (RESET) VE TEMEL AYARLAR
    ==========================================================================
-   Farklı tarayıcılar buton, başlık gibi elemanlara varsayılan olarak 
-   farklı boşluk/stil uygular. box-sizing: border-box ise padding ve 
-   border değerlerinin elemanın toplam genişliğine EKLENMEK yerine 
-   genişliğin İÇİNDEN sayılmasını sağlar; bu da genişlik hesaplarını 
-   çok daha öngörülebilir hale getirir.
-------------------------------------------------------------------------- */
+*/
 *,
 *::before,
 *::after {
@@ -75,23 +80,21 @@ body {
     line-height: 1.5;
     min-height: 100vh;
 
-    /* Body'yi flex yaparak içindeki .app-container'ı hem yatayda hem 
-       dikeyde ortalıyoruz. Bu, tek satırlık dikey ortalama için en 
-       temiz yöntemlerden biridir. */
     display: flex;
     justify-content: center;
     align-items: center;
     padding: var(--space-lg);
 
-    /* Şöminenin sıcaklığını hissettiren, çok hafif bir radyal gradyan.
-       Arkaplanın tam ortasından değil, hafif üstten "ışıyormuş" gibi 
-       bir his vermesi için merkez noktasını yukarı kaydırdık. Bu, 
-       sayfanın imzası (signature) niteliğinde küçük bir detay. */
-    background-image: radial-gradient(
-        circle at 50% 20%,
-        rgba(232, 140, 77, 0.06),
-        transparent 60%
-    );
+    /* İMZA DETAYI ("incik boncuk" hissi): koyu temadaki TEK bir kor 
+       parıltısı yerine, üç pastel rengin ÇOK hafif, birbirinden ayrı 
+       noktalardan yayılan üç radyal gradyanını üst üste bindiriyoruz. 
+       Bu, sanki masaya serpiştirilmiş pembe/lila/nane şekerler gibi, 
+       hafif ve "ferah" bir doku hissi veriyor — tek bir merkezi ışık 
+       yerine dağınık, oyuncu bir arkaplan. */
+    background-image:
+        radial-gradient(circle at 15% 20%, rgba(255, 182, 193, 0.35), transparent 35%),
+        radial-gradient(circle at 85% 15%, rgba(216, 191, 234, 0.30), transparent 38%),
+        radial-gradient(circle at 50% 90%, rgba(183, 236, 216, 0.25), transparent 40%);
 }
 
 /* ==========================================================================
@@ -115,6 +118,9 @@ body {
     font-size: 2rem;
     font-weight: 600;
     letter-spacing: -0.02em;
+    /* Başlığa pembe-lila arası, yumuşak bir renk vererek paletin 
+       kimliğini en üstten hemen belli ediyoruz. */
+    color: var(--color-accent-lilac-deep);
 }
 
 .app-subtitle {
@@ -123,13 +129,6 @@ body {
     margin-top: var(--space-xs);
 }
 
-/* 
-  .app-main: İki panelimizi (sayaç ve mikser) yan yana dizen ızgara.
-  grid-template-columns: 1fr 1fr → İki sütunu da eşit genişlikte böl.
-  Neden flexbox değil de grid? Çünkü iki panelin de aynı satırda, 
-  birbirine bağlı sabit oranlarda durmasını istiyoruz; grid bu tür 
-  "iki boyutlu" ve oranlı düzenler için daha net bir araçtır.
-*/
 .app-main {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -137,7 +136,6 @@ body {
     align-items: start;
 }
 
-/* Mobilde (768px altı) iki sütunu alt alta düşürüyoruz ki sıkışmasın. */
 @media (max-width: 768px) {
     .app-main {
         grid-template-columns: 1fr;
@@ -147,23 +145,34 @@ body {
 /* ==========================================================================
    4) ORTAK PANEL STİLİ
    ==========================================================================
-   Hem sayaç hem mikser paneli aynı "kart" görünümünü paylaşıyor.
-   Ortak stili .panel sınıfında topluyoruz, panele özgü farklılıkları 
-   (.timer-panel, .mixer-panel) ayrı ayrı ekliyoruz. Bu, CSS'te 
-   tekrarı önleyen temel bir prensiptir (DRY - Don't Repeat Yourself).
+   TASARIM KARARI: İki panel artık BİRBİRİNDEN FARKLI kenarlık karakteri 
+   taşıyor — sayaç paneli (ana odak noktası) DÜZ, sakin bir pembe kenarlıkla 
+   "ciddiyetini" koruyor; mikser paneli ise KESİKLİ (dashed) bir lila 
+   kenarlıkla daha "oyuncu/defter" hissi veriyor. Bu, "bazı kartlarda 
+   kesikli çerçeve" isteğini rastgele değil, HİYERARŞİYİ destekleyecek 
+   şekilde uyguluyor: odaklanman gereken yer sakin, keyif alacağın yer 
+   sevimli duruyor.
 ------------------------------------------------------------------------- */
 .panel {
     background-color: var(--color-panel);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
+    /* Koyu temadaki sert gölge yerine, çok yumuşak pembemsi bir gölge — 
+       "kağıttan kesilmiş, hafifçe yükselen" bir kart hissi. */
+    box-shadow: 0 8px 24px rgba(255, 182, 193, 0.18);
+}
+
+.mixer-panel {
+    border-style: dashed;
+    border-color: var(--color-accent-lilac);
 }
 
 .panel-heading {
     font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: var(--color-accent-lilac-deep);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: var(--space-md);
@@ -181,8 +190,6 @@ body {
     gap: var(--space-md);
 }
 
-/* Mod anahtarı (Odaklanma / Mola): İki butonu tek bir "hap" (pill) 
-   şeklindeki kutunun içine alıp, aktif olanı vurgulu gösteriyoruz. */
 .mode-switcher {
     display: flex;
     background-color: var(--color-bg);
@@ -202,19 +209,18 @@ body {
     border-radius: 999px;
     padding: var(--space-xs) var(--space-md);
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
-/* .is-active: JS ileride hangi modun seçili olduğunu bu sınıfı 
-   ekleyip çıkararak yönetecek. Şimdilik statik olarak ilk butona verildi. */
+.mode-btn:hover {
+    transform: translateY(-1px);
+}
+
 .mode-btn.is-active {
     background-color: var(--color-accent-soft);
-    color: var(--color-accent);
+    color: var(--color-accent-pink-deep);
 }
 
-/* Sayacın büyük rakamları. "tabular-nums" sayesinde her rakam aynı 
-   genişlikte hizalanır; aksi halde "1" ile "8" farklı genişlikte 
-   olduğu için sayaç akarken rakamlar hafifçe titreyip kayabilir. */
 .timer-display {
     font-family: var(--font-display);
     font-size: 5rem;
@@ -226,25 +232,30 @@ body {
 }
 
 .timer-colon {
-    color: var(--color-accent);
+    color: var(--color-accent-pink-deep);
     margin: 0 4px;
 }
 
-/* İlerleme çubuğu: dıştaki .progress-track sabit bir "yol", 
-   içindeki .progress-fill ise dolan kısım. Şimdilik %100 dolu 
-   gösteriyoruz; JS eklendiğinde bu genişlik dinamik güncellenecek. */
 .progress-track {
     width: 100%;
-    height: 6px;
+    height: 8px;
     background-color: var(--color-bg);
     border-radius: 999px;
     overflow: hidden;
 }
 
+/* İMZA DETAYI (signature element): İlerleme çubuğu artık tek düz bir 
+   renk değil, pembeden laciye-lilaya geçen yumuşak bir "şeker" gradyanı. 
+   Bu, sayfanın "buradan hatırlanacağın" tek gösterişli anı — geri kalan 
+   her şey sakin kaldığı için bu detay boğulmadan öne çıkıyor. */
 .progress-fill {
     width: 100%;
     height: 100%;
-    background-color: var(--color-accent);
+    background-image: linear-gradient(
+        90deg,
+        var(--color-accent-pink) 0%,
+        var(--color-accent-lilac) 100%
+    );
     border-radius: 999px;
 }
 
@@ -255,7 +266,6 @@ body {
     justify-content: center;
 }
 
-/* Ortak buton stili */
 .control-btn {
     font-family: var(--font-body);
     font-size: 0.9rem;
@@ -263,71 +273,78 @@ body {
     border-radius: var(--radius-md);
     padding: var(--space-sm) var(--space-md);
     cursor: pointer;
-    border: 1px solid transparent;
-    transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+    border: 2px solid transparent;
+    transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Ana eylem butonu (Başlat): Vurgu rengiyle dolu, dikkat çekici. */
 .control-btn--primary {
-    background-color: var(--color-accent);
-    color: #1A1006;
+    background-color: var(--color-accent-pink-deep);
+    color: #FFFFFF;
     flex: 1;
 }
 
 .control-btn--primary:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(247, 140, 162, 0.4);
 }
 
-/* İkincil butonlar (Sıfırla, Süre): Sadece kenarlığı olan, sessiz butonlar.
-   Bu ayrım "görsel hiyerarşi" kurar: kullanıcı hangi butonun ana eylem 
-   olduğunu bir bakışta anlar. */
 .control-btn--ghost {
-    background-color: transparent;
+    background-color: #FFFFFF;
     color: var(--color-text-secondary);
     border-color: var(--color-border);
 }
 
 .control-btn--ghost:hover {
-    border-color: var(--color-accent-dim);
-    color: var(--color-text-primary);
+    border-color: var(--color-accent-lilac-deep);
+    color: var(--color-accent-lilac-deep);
+    transform: translateY(-2px);
 }
 
 /* ==========================================================================
    6) MİKSER PANELİ (SES KAYDIRICILARI)
    ==========================================================================
 */
-.mixer-panel {
-    display: flex;
-    flex-direction: column;
-}
-
 .sound-row {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    padding: var(--space-sm) 0;
-    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-sm) var(--space-xs);
+    border-bottom: 1px dashed var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease;
+}
+
+.sound-row:hover {
+    background-color: rgba(255, 182, 193, 0.10);
 }
 
 .sound-row:last-child {
     border-bottom: none;
 }
 
+/* İMZA DETAYI: Her ses satırının ikon "boncuğu" farklı bir pastel renkte. 
+   nth-child ile 5 rengi sırayla döndürüyoruz — tıpkı gerçek bir bilezikteki 
+   farklı renkli boncuklar gibi. Bu, "incik boncuk" temasını lafta bırakmak 
+   yerine somut, işlevsel bir detaya (her sesin kendi rengi = kolay tanıma) 
+   dönüştürüyor. */
 .sound-icon {
-    font-size: 1.4rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1.3rem;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-panel-raised);
-    border-radius: var(--radius-sm);
+    border-radius: 50%; /* kutu değil, tam yuvarlak boncuk */
     flex-shrink: 0;
+    background-color: var(--color-accent-soft);
 }
 
-/* .sound-info: label + slider'ı dikey olarak grupluyoruz, bu grup 
-   kalan tüm genişliği (flex: 1) kaplıyor ki slider uzun ve rahat 
-   sürüklenebilir olsun. */
+.sound-row:nth-child(5n+1) .sound-icon { background-color: rgba(255, 182, 193, 0.35); } /* pembe */
+.sound-row:nth-child(5n+2) .sound-icon { background-color: rgba(216, 191, 234, 0.35); } /* lila */
+.sound-row:nth-child(5n+3) .sound-icon { background-color: rgba(183, 236, 216, 0.40); } /* nane */
+.sound-row:nth-child(5n+4) .sound-icon { background-color: rgba(255, 214, 165, 0.40); } /* şeftali */
+.sound-row:nth-child(5n+5) .sound-icon { background-color: rgba(255, 244, 173, 0.45); } /* vanilya */
+
 .sound-info {
     display: flex;
     flex-direction: column;
@@ -351,112 +368,86 @@ body {
 }
 
 /* --------------------------------------------------------------------
-   Range Input (Kaydırıcı) Özelleştirmesi
-   --------------------------------------------------------------------
-   Tarayıcıların varsayılan <input type="range"> görünümü hem çirkin 
-   hem de tarayıcıdan tarayıcıya farklıdır. Bunu kendi tasarımımıza 
-   uydurmak için önce "appearance: none" ile varsayılanı tamamen 
-   kapatıyoruz, sonra "track" (yol) ve "thumb" (tutamaç) kısımlarını 
-   Chrome/Safari (-webkit-) ve Firefox (-moz-) için AYRI AYRI 
-   tanımlıyoruz. Bu iki tarayıcı motoru bu elemanları farklı 
-   pseudo-element isimleriyle kontrol ettiği için ikisini de yazmak 
-   zorundayız; biri diğerinin yerini tutmaz.
+   Range Input (Kaydırıcı) Özelleştirmesi — pastel pembe/lila tema
 ----------------------------------------------------------------------- */
 .sound-slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 4px;
+    height: 5px;
     background-color: var(--color-border);
     border-radius: 999px;
     cursor: pointer;
 }
 
-/* Chrome / Edge / Safari için tutamaç (thumb) */
 .sound-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background-color: var(--color-accent);
-    border: 3px solid var(--color-bg);
-    box-shadow: 0 0 0 1px var(--color-accent-dim);
+    background-color: var(--color-accent-pink-deep);
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 0 0 1px var(--color-accent-lilac-deep), 0 2px 6px rgba(247, 140, 162, 0.35);
     cursor: pointer;
     transition: transform 0.15s ease;
 }
 
 .sound-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
+    transform: scale(1.2);
 }
 
-/* Firefox için tutamaç (thumb) */
 .sound-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background-color: var(--color-accent);
-    border: 3px solid var(--color-bg);
-    box-shadow: 0 0 0 1px var(--color-accent-dim);
+    background-color: var(--color-accent-pink-deep);
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 0 0 1px var(--color-accent-lilac-deep), 0 2px 6px rgba(247, 140, 162, 0.35);
     cursor: pointer;
     transition: transform 0.15s ease;
 }
 
 .sound-slider::-moz-range-thumb:hover {
-    transform: scale(1.15);
+    transform: scale(1.2);
 }
 
-/* Firefox'ta track'in varsayılan kenarlığını da temizliyoruz */
 .sound-slider::-moz-range-track {
     background-color: var(--color-border);
-    height: 4px;
+    height: 5px;
     border-radius: 999px;
 }
 
 /* --------------------------------------------------------------------
    Ses Kontrol Butonu (Play/Pause)
-   --------------------------------------------------------------------
-   Her ses satırına, slider'dan BAĞIMSIZ olarak sesi anında açıp 
-   kapatabilecek küçük, yuvarlak bir buton ekliyoruz. Neden slider 
-   YETMEZ de ayrı bir butona ihtiyacımız var? Çünkü kullanıcı sesi 
-   "%30'da bırakıp geçici olarak durdurmak" isteyebilir; slider'ı 
-   sıfıra çekmek o kayıtlı seviyeyi kaybettirir. Play/Pause butonu ise 
-   seviyeyi HİÇ bozmadan sadece çalma durumunu değiştirecek 
-   (bunu JavaScript adımında bağlayacağız).
-------------------------------------------------------------------------- */
+----------------------------------------------------------------------- */
 .sound-toggle-btn {
-    /* Aynı .sound-icon kutusuyla aynı boyutta olsun ki satır hizası bozulmasın */
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
 
     border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background-color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    background-color: #FFFFFF;
     color: var(--color-text-secondary);
     font-size: 0.8rem;
     cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
 }
 
 .sound-toggle-btn:hover {
-    border-color: var(--color-accent-dim);
-    color: var(--color-text-primary);
+    border-color: var(--color-accent-pink-deep);
+    color: var(--color-accent-pink-deep);
+    transform: scale(1.1);
 }
 
-/* 
-  .is-playing: JS ileride bir ses gerçekten çalmaya başladığında bu 
-  sınıfı butona ekleyecek. Böylece buton, "şu an bu ses AKTİF" bilgisini 
-  vurgu rengiyle gösterecek — kullanıcı hangi seslerin açık olduğunu 
-  slider'lara tek tek bakmadan, bu renkli noktalardan anlayabilecek.
-*/
 .sound-toggle-btn.is-playing {
-    background-color: var(--color-accent-soft);
-    border-color: var(--color-accent);
-    color: var(--color-accent);
+    background-color: var(--color-accent-pink-deep);
+    border-color: var(--color-accent-pink-deep);
+    color: #FFFFFF;
 }
 
 /* ==========================================================================
@@ -472,83 +463,34 @@ body {
 /* ==========================================================================
    8) ERİŞİLEBİLİRLİK: Klavye ile Odaklanma Göstergesi
    ==========================================================================
-   Fare yerine klavye (Tab tuşu) ile gezinen kullanıcılar için, hangi 
-   elemanın odakta (focus) olduğunu net bir çerçeve ile gösteriyoruz.
-   Bu satırı silmek görsel olarak "daha temiz" gibi görünse de, 
-   klavye kullanıcıları için uygulamayı kullanılamaz hale getirir; 
-   bu yüzden bilinçli olarak koruyoruz.
+   Pastel palette geçtik diye erişilebilirliği FEDA ETMİYORUZ: outline 
+   rengini eski turuncudan, bu paletteki en KOYU/kontrastlı vurgu tonuna 
+   (derin pembe) çevirdik ki açık arkaplanda hâlâ net görünsün.
 ------------------------------------------------------------------------- */
 :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-accent-pink-deep);
     outline-offset: 2px;
 }
 
 /* ==========================================================================
    9) AYAR KARTI (MODAL) — Özel Süre Ayarı
    ==========================================================================
-   Bir modal, teknik olarak 2 iç içe katmandan oluşur:
-   1) .modal-overlay: Tüm ekranı kaplayan, arkayı karartan yarı saydam kat.
-   2) .modal-card: Bu katın TAM ORTASINDA duran, gerçek içerik kartı.
-
-   .modal-overlay İÇİN position: fixed KULLANIMI:
-   "fixed" konumlandırma, elemanı sayfanın normal akışından tamamen 
-   çıkarır ve onu TARAYICI PENCERESİNE göre konumlandırır — sayfa 
-   aşağı kaydırılsa bile overlay hep ekranda aynı yerde kalır. 
-   "inset: 0" ise "top: 0; right: 0; bottom: 0; left: 0;" için bir 
-   kısayoldur; yani bu katı ekranın dört bir yanına da yapıştırıp tüm 
-   pencereyi kaplamasını sağlar.
-
-   ORTALAMA MANTIĞI:
-   .modal-overlay'i display: flex + align-items: center + 
-   justify-content: center yapıyoruz. Bu sayede içindeki TEK çocuk 
-   eleman olan .modal-card, hem dikeyde hem yatayda otomatik olarak 
-   ekranın tam ortasına oturuyor — sabit piksel hesabıyla 
-   "margin-left: -180px" gibi kırılgan (ekran boyutuna göre bozulan) 
-   yöntemlere hiç gerek kalmıyor.
-
-   display: none <-> flex GEÇİŞİ (GÖRÜNÜRLÜK MANTIĞI):
-   Modalın varsayılan hali "display: none" — yani modal DOM'da var 
-   ama hiç render edilmiyor, hiç yer kaplamıyor, ekran okuyucular 
-   tarafından da görülmüyor. JavaScript adımına geçtiğimizde, 
-   settingsBtn'e tıklanınca bu elemana ".is-open" class'ını ekleyeceğiz; 
-   bu class display'i "flex" yapıp modalı hem görünür kılacak hem de 
-   içindeki ortalama düzenini devreye sokacak. 
-   Neden "opacity: 0" yerine "display: none" tercih ediyoruz? Çünkü 
-   opacity sadece görsel olarak gizler; eleman hâlâ DOM'da yer kaplar 
-   ve klavye ile Tab tuşuna basan bir kullanıcı, GÖRÜNMEYEN modal 
-   içindeki input'a yanlışlıkla odaklanabilir. display: none ise 
-   elemanı hem görsel olarak hem de etkileşim/erişilebilirlik 
-   katmanından tamamen kaldırır — modal kapalıyken "hiç yokmuş gibi" 
-   davranması tam olarak istediğimiz şey.
-------------------------------------------------------------------------- */
+*/
 .modal-overlay {
-    /* Varsayılan durum: modal tamamen gizli ve etkileşimsiz */
     display: none;
-
     position: fixed;
     inset: 0;
     z-index: 100;
 
-    /* Arkayı karartan yarı saydam siyah kat. rgba'nın 4. değeri (alpha) 
-       0 (tamamen saydam) ile 1 (tamamen opak) arasında bir saydamlık 
-       oranıdır; 0.65 ile arkadaki arayüzün hafifçe seçilmesini ama 
-       dikkatin modal karta yönelmesini istiyoruz. */
-    background-color: rgba(10, 8, 6, 0.65);
+    /* Koyu temadaki siyahımsı karartma yerine, çok yumuşak bir lila-pembe 
+       yarı saydamlık — arkaplanı tamamen boğmadan dikkati karta çeker. */
+    background-color: rgba(107, 74, 92, 0.35);
 
-    /* İçerideki tek çocuğu (.modal-card) hem yatay hem dikeyde ortalıyoruz */
     align-items: center;
     justify-content: center;
-
-    /* Modal küçük ekranlarda kenarlara yapışmasın diye biraz boşluk payı */
     padding: var(--space-md);
 }
 
-/* 
-  .is-open: JavaScript bu class'ı .modal-overlay'e eklediğinde, 
-  display: none kuralının ÜZERİNE yazarak (aynı özellik, sonradan 
-  tanımlandığı ve aynı özgüllükte olduğu için CSS'te SONRAKİ kural 
-  kazanır) modalı flex'e çevirip görünür ve ortalanmış hale getiriyor.
-*/
 .modal-overlay.is-open {
     display: flex;
 }
@@ -556,13 +498,12 @@ body {
 .modal-card {
     width: min(360px, 100%);
     background-color: var(--color-panel-raised);
-    border: 1px solid var(--color-border);
+    /* "Sevimli ajanda sayfası" hissi için kesikli lila çerçeve. */
+    border: 2px dashed var(--color-accent-lilac-deep);
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
 
-    /* Karta hafif bir gölge veriyoruz ki arkadaki karartılmış katmandan 
-       görsel olarak "yükseliyormuş" gibi ayrışsın. */
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 24px 48px rgba(216, 191, 234, 0.35);
 
     display: flex;
     flex-direction: column;
@@ -573,6 +514,7 @@ body {
     font-family: var(--font-display);
     font-size: 1.1rem;
     font-weight: 600;
+    color: var(--color-accent-pink-deep);
 }
 
 .modal-description {
@@ -581,19 +523,13 @@ body {
     margin-top: calc(-1 * var(--space-sm));
 }
 
-/* 
-  Sayı giriş kutusu: Genel .control-btn ailesinden ayrı, kendi başına 
-  bir input stili. Tarayıcının varsayılan <input> görünümü de tıpkı 
-  range slider gibi temaya uymuyor; burada border/background'u kendi 
-  tasarım tokenlarımızla eziyoruz.
-*/
 .modal-input {
     font-family: var(--font-display);
     font-size: 1.5rem;
     font-variant-numeric: tabular-nums;
     color: var(--color-text-primary);
     background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: var(--space-sm) var(--space-md);
     text-align: center;
@@ -602,17 +538,9 @@ body {
 
 .modal-input:focus {
     outline: none;
-    border-color: var(--color-accent);
+    border-color: var(--color-accent-pink-deep);
 }
 
-/* 
-  Tarayıcıların <input type="number"> için varsayılan olarak eklediği 
-  yukarı/aşağı ok ikonlarını (spinner) kaldırıyoruz; bunlar temamızla 
-  uyumsuz, varsayılan tarayıcı stiliyle geliyor ve görsel bütünlüğü 
-  bozuyor. Chrome/Safari ve Firefox bu ikonu farklı yollarla kontrol 
-  ettiği için, tıpkı range slider'da olduğu gibi, ikisini de ayrı ayrı 
-  hedefliyoruz.
-*/
 .modal-input::-webkit-outer-spin-button,
 .modal-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
