@@ -107,6 +107,16 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
+
+    /* YENİ: Az sonra ekleyeceğimiz .floating-bg-elements katmanı 
+       "position: fixed" olduğu için, CSS'in normal boyama sırasına göre 
+       (positioned elemanlar, non-positioned elemanların ÜSTÜNE çizilir) 
+       DOM'da ondan SONRA gelse bile varsayılan olarak ALTINDA kalırdı. 
+       Bunu önlemek için .app-container'ı da "positioned" yapıp (position: 
+       relative) daha YÜKSEK bir z-index veriyoruz — böylece gerçek 
+       arayüz, dekoratif emojilerin HER ZAMAN üstünde kalır. */
+    position: relative;
+    z-index: 1;
 }
 
 .app-header {
@@ -558,4 +568,123 @@ body {
 
 .modal-actions .control-btn {
     flex: 1;
+}
+
+/* ==========================================================================
+   10) SÜZÜLEN ARKAPLAN NESNELERİ (.floating-bg-elements)
+   ==========================================================================
+   AMAÇ: index.html'deki 10 <span> emojisini, ekranın ALTINDAN ÜSTÜNE 
+   doğru yavaşça süzülen, hafifçe sağa/sola kayan ve hafifçe dönen, 
+   göz yormayan bir "arkaplan tozu" hissi verecek şekilde animasyonlu 
+   hale getiriyoruz.
+
+   PERFORMANS NOTU (neden SADECE transform + opacity animasyonluyoruz?):
+   Bir CSS animasyonunda "left", "top", "width", "margin" gibi özellikleri 
+   değiştirmek, tarayıcının her karede sayfanın LAYOUT'unu (yerleşimini) 
+   YENİDEN HESAPLAMASINA (reflow) zorlar — bu, özellikle 10 element aynı 
+   anda, sürekli hareket ederken CPU'yu zorlayıp DÜŞÜK FPS'e (takılmalara) 
+   yol açar. Buna karşılık "transform" (translate/rotate/scale) ve 
+   "opacity", tarayıcı tarafından DOĞRUDAN GPU'da, layout'a hiç dokunmadan 
+   "compositing" katmanında işlenir — bu yüzden onlarca element birden 
+   aynı anda animasyonlansa bile performans sorunu yaratmazlar. Bu yüzden 
+   pozisyonu "left/top" ile değil, TEK BİR "transform: translate()" ile 
+   kontrol ediyoruz.
+------------------------------------------------------------------------- */
+
+/* Kapsayıcı: tüm ekranı kaplayan, TIKLANAMAZ, taşan içeriği gizleyen bir 
+   "sahne". z-index: 0 vererek .app-container'ın (z-index: 1) HER ZAMAN 
+   üstünde kalmasını garanti ediyoruz. */
+.floating-bg-elements {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+
+    /* pointer-events: none -> Bu katman ve İÇİNDEKİ HER ŞEY, fareyle 
+       TIKLANAMAZ/hedeflenemez hale gelir; tıklamalar sanki bu katman hiç 
+       yokmuş gibi ALTINDAKİ gerçek arayüze geçer. Bu satır olmadan, 
+       emojilerin kapladığı alanlara denk gelen buton/slider tıklamaları 
+       YANLIŞLIKLA bu dekoratif katman tarafından yutulabilirdi. */
+    pointer-events: none;
+}
+
+.floating-item {
+    /* Her elemanın YATAY konumu, index.html'de inline style ile verilen 
+       --left değişkeninden geliyor (örn. "14%"). Böylece 10 emoji, 
+       ekranın farklı noktalarından yükseliyor. */
+    position: absolute;
+    left: var(--left);
+    bottom: -10%; /* Başlangıç noktası: ekranın hemen ALTI (görünmez alan) */
+
+    font-size: var(--size, 1.3rem);
+    line-height: 1;
+
+    /* GPU'ya "bu elemanın transform/opacity ile sık sık değişeceğini" 
+       önceden haber veriyoruz; tarayıcı bunun için ayrı bir compositing 
+       katmanı hazırlayıp animasyonu daha akıcı hale getirebilir. Not: 
+       will-change'i HER elemana kalıcı/gereksiz yere eklemek belleği 
+       şişirebilir, ama burada sayımız az (10) ve zaten sürekli animasyon 
+       çalıştığı için kullanımı uygundur. */
+    will-change: transform, opacity;
+
+    /* animation: <isim> <süre> <zamanlama-fonksiyonu> <gecikme> <tekrar>
+       - süre ve gecikme: index.html'deki --duration / --delay 
+         değişkenlerinden geliyor, böylece her emoji FARKLI bir hızda ve 
+         FARKLI bir anda yola çıkıyor (hepsi aynı anda kalkarsa "dalga 
+         dalga" değil, mekanik bir "hepsi birden" hissi verirdi).
+       - linear: Sabit hızda hareket (bulut gibi süzülme hissi; ease 
+         kullansaydık başta/sonda hızlanma-yavaşlama olurdu, bu da daha 
+         "zıplayan" bir his verirdi — süzülme için linear daha doğru).
+       - infinite: Sayfa açık kaldığı sürece sonsuz döngü. */
+    animation-name: float-drift-up;
+    animation-duration: var(--duration, 20s);
+    animation-delay: var(--delay, 0s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+/* @keyframes float-drift-up: TEK bir animasyon tanımını, her elemanın 
+   KENDİ --drift değişkeniyle birleştirerek yeniden kullanıyoruz. Bu 
+   sayede 10 ayrı @keyframes yazmak yerine, tek bir tanım + değişken 
+   kombinasyonuyla her emojiye özgü bir yörünge elde ediyoruz. */
+@keyframes float-drift-up {
+    0% {
+        /* Başlangıç: ekranın altında, tamamen şeffaf (aniden "belirmesin"). */
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        /* Yükselişin ilk %10'unda yumuşakça beliriyor. */
+        opacity: 0.8;
+    }
+    90% {
+        /* Ekranın üstüne yaklaşırken hâlâ görünür; %100'e kadar sönecek. */
+        opacity: 0.8;
+    }
+    100% {
+        /* -115vh: elemanı kendi başlangıç noktasına göre EKRAN 
+           YÜKSEKLİĞİNİN biraz fazlasını yukarı taşı (tamamen ekranın 
+           dışına çıksın, "bottom: -10%" başlangıcını da telafi etsin).
+           var(--drift): her emojiye özgü hafif bir yatay kayma (örn. 
+           "+30px" ya da "-20px") — dümdüz yukarı değil, rüzgarda 
+           sürükleniyormuş gibi hafif çapraz bir yörünge.
+           rotate(25deg): TAM bir dönüş (360deg) değil, "hafifçe dönme" 
+           isteğine uygun ÖLÇÜLÜ bir çevrilme — sürekli fır dönen 
+           emojiler göz yorucu/dikkat dağıtıcı olurdu. */
+        transform: translate(var(--drift, 0px), -115vh) rotate(25deg);
+        opacity: 0;
+    }
+}
+
+/* ERİŞİLEBİLİRLİK: Kullanıcı işletim sistemi ayarlarından "hareketi 
+   azalt" (reduce motion) tercihini açtıysa, bu SÜREKLİ ve SONSUZ 
+   animasyonu tamamen durduruyoruz. Hareket hassasiyeti olan kullanıcılar 
+   için (baş dönmesi, migren tetikleyicileri vb.) bu saygılı bir 
+   varsayılan davranıştır — dekoratif bir detay için erişilebilirliği 
+   feda etmiyoruz. */
+@media (prefers-reduced-motion: reduce) {
+    .floating-item {
+        animation: none;
+        opacity: 0.35; /* Hareket olmasa da hafif bir dekor izi kalsın. */
+    }
 }
